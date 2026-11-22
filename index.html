@@ -280,6 +280,9 @@ footer button{background:none;border:0;color:#9fd2dc;text-decoration:underline;p
 .basket svg{width:100%;height:100%}
 .basket.shake svg{animation:shake .4s}
 #map .evt{cursor:pointer}
+.prod{margin-top:8px}
+.ph{display:flex;justify-content:space-between;gap:8px;font-weight:700;color:#4d6c77;font-size:14px;margin-top:6px}
+.ph b{color:var(--ink);font-family:var(--display);font-size:17px}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -1052,13 +1055,28 @@ function openZone(id){
 }
 function upgradeCost(o){var c=CAT[o.t],out={};Object.keys(c.cost).forEach(function(k){if(k!=='yildiz')out[k]=Math.max(2,c.cost[k])*(o.lv+1);});if(!Object.keys(out).length)out={odun:4*(o.lv+1),tas:4*(o.lv+1)};out.yildiz=4*o.lv;return out;}
 function canUpgrade(o){var c=CAT[o.t];return o.lv<3&&!c.road&&!c.happy&&o.t!=='apartman';}
+function prodInfo(o,c,ok){
+  var m=stats(),rate=RATE*o.lv*m.speed,st=o.st||0,cap=capOf(o),frac=st-Math.floor(st),nm=RES[c.make].name.toLowerCase(),why='';
+  if(!ok) why='Durdu: bina yola bağlı değil. Yanındaki bir kareye yol yap.';
+  else if(m.pop<=0) why='Durdu: hiç işçi yok. Yola bağlı bir ev kur.';
+  else if(st>=cap) why='Depo dolu! Toplamazsan üretim durur.';
+  var html='<div class="prod"><div class="ph"><span>Depo</span><b>'+Math.floor(st)+' / '+cap+' '+nm+'</b></div>'+
+    '<div class="meter sm"><i style="width:'+Math.round(st/cap*100)+'%"></i></div>';
+  if(why) html+='<p class="warn">'+why+'</p>';
+  else{
+    var sec=Math.max(1,Math.ceil((1-frac)/rate));
+    html+='<div class="ph"><span>Sonraki '+nm+'</span><b>'+sec+' sn</b></div><div class="meter sm"><i style="width:'+Math.round(frac*100)+'%;background:#2e9e5b"></i></div>'+
+      '<p class="note">Dakikada yaklaşık '+(Math.round(60*rate*10)/10)+' '+nm+'. '+(m.workRatio<1?'İşçi az olduğu için yavaş, ev kurarsan hızlanır.':m.happy<60?'Mutluluk artarsa hızlanır.':'')+'</p>';
+  }
+  return html+'</div>';
+}
 function renderSel(){
   var box=$('#selbox');
   if(!sel||!state.obj[sel]){box.hidden=true;return;}
   var o=state.obj[sel],c=CAT[o.t],ok=works(sel),html='<div class="selh"><div><div class="dk">'+(c.know?c.know.skill:GROUPS.filter(function(g){return g[0]===c.grp;})[0][1])+'</div><h2>'+c.name+(canUpgrade(o)||o.lv>1?' <small>Sv. '+o.lv+'</small>':'')+'</h2></div><button type="button" class="x" data-unsel aria-label="Kapat">×</button></div>';
   if(!ok) html+='<p class="warn">Yola bağlı değil. Yanındaki bir kareye yol yap.</p>';
   if(c.pop) html+='<p class="note">'+c.pop*o.lv+' kişi yaşıyor.</p>';
-  if(c.make) html+='<p class="note">Depo: '+Math.floor(o.st||0)+' / '+capOf(o)+' '+RES[c.make].name.toLowerCase()+'. Yaklaşık '+Math.round(60*RATE*o.lv*stats().speed*10)/10+' / dakika.</p>';
+  if(c.make) html+=prodInfo(o,c,ok);
   if(c.know) html+='<p class="note">Bir turda en fazla '+4*o.lv+' '+RES[c.know.res].name.toLowerCase()+' ve 4 bilgi yıldızı kazanırsın.</p>';
   if(c.happy) html+='<p class="note">Mutluluğa +'+c.happy+' katkı.</p>';
   html+='<div class="selb">';
@@ -1131,7 +1149,7 @@ function tapTile(k){
 }
 function collect(k){
   var o=state.obj[k],c=CAT[o.t],n=Math.floor(o.st||0);if(n<1)return;
-  o.st-=n;state.res[c.make]+=n;var p=unkey(k),bm={};bm[c.make]=1;fx(p[0],p[1],'+'+n+' '+RES[c.make].name.toLowerCase());good();save();refresh(bm);
+  o.st-=n;state.res[c.make]+=n;var p=unkey(k),bm={};bm[c.make]=1;fx(p[0],p[1],'+'+n+' '+RES[c.make].name.toLowerCase());toast(n+' '+RES[c.make].name.toLowerCase()+' toplandı ve kaynaklarına eklendi. Depo yeniden doluyor.');good();save();refresh(bm);
 }
 function doSel(act){
   var o=state.obj[sel];if(!o)return;var c=CAT[o.t];
@@ -1645,7 +1663,8 @@ document.addEventListener('keydown',function(e){
 /* ---------- açılış ---------- */
 setInterval(function(){
   if(!state||!prof)return;
-  if(tick()){save();renderObjects();if(sel)renderSel();}
+  var ch=tick();if(ch){save();renderObjects();}
+  if(sel&&state.obj[sel]&&CAT[state.obj[sel].t].make)renderSel();else if(ch&&sel)renderSel();
   if(!document.hidden&&$('#modal').hidden&&$('#login').hidden&&!ev){evClock++;if(evClock>=evNext)spawnEvent();}
 },1000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&state&&prof){tick();refresh();}});
