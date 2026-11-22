@@ -4,10 +4,13 @@
 
 ## Neler var
 
-- **Oyuncu profilleri:** Açılışta ad ve avatar seçilir. Aynı cihazda birden fazla çocuk kendi adasıyla oynar. Şifre ya da sunucu yoktur.
-- **Büyüyen harita:** Köy (6 bina) → Kasaba (6 bina) → İlçe (4 bina). Bir bölgedeki bütün binalar kurulup kaynak toplanınca sonraki bölge açılır.
-- **Bulmacalar:** Anagram, çoktan seçmeli bilgi soruları (uzay, doğa, coğrafya, tarih, sağlık, karma), sayı dizileri, işlem, para problemleri, saat hesabı, doğru/yanlış, hafıza kartları (başkentler, çarpım) ve eş anlamlı eşleştirme.
-- Havuz bitene kadar aynı soru tekrar gelmez.
+- **Şehir kurma:** Sürüklenip yakınlaştırılabilen izometrik bir ada haritası. Evleri, yolları, üretim binalarını ve süsleri istediğin kareye koyarsın.
+- **Nüfus, işçi ve mutluluk:** Evler nüfus getirir. Oduncu, taş ocağı ve tarla kendi kendine üretir ama işçi ister. Süsler ve bilgi binaları mutluluğu, mutluluk da üretim hızını artırır. Binalar ancak yola bitişikse çalışır.
+- **Bilgi binaları ve bulmacalar:** 16 bilgi binası (anagram, bilgi soruları, sayı dizileri, işlem, para ve saat problemleri, doğru/yanlış, hafıza kartları, eş anlamlı eşleştirme). Bulmacalar kaynak ve bilgi yıldızı kazandırır.
+- **Yükseltme:** Binalar 3 seviyeye çıkar. Seviye arttıkça nüfus, üretim ve bulmaca ödülü artar.
+- **Bölgeler:** Köy → Kasaba → İlçe. Nüfus ve bilgi yıldızı hedefine ulaşınca yeni topraklar açılır.
+- **Görevler:** Oyuncuya yol gösteren 17 adımlık görev zinciri.
+- **Oyuncu profilleri:** Ad ve avatar ile giriş. Her oyuncunun adası ayrı saklanır, eski kayıtlar yeni haritaya taşınır.
 
 ## Nasıl oynanır
 

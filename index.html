@@ -212,6 +212,52 @@ footer button{background:none;border:0;color:#9fd2dc;text-decoration:underline;p
 .av[aria-checked="true"]{border-color:var(--coral)}
 .av svg{width:50px;height:50px;display:block}
 .lnote{font-size:13px;color:#4d6c77;margin:12px 0 0}
+/* ---- v3: şehir haritası ---- */
+.mapwrap{position:relative;background:#1f93b5}
+#map{display:block;width:100%;height:min(68vh,640px);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#map.drag{cursor:grabbing}
+@media (max-width:860px){#map{height:62vh}}
+#map .ob{cursor:pointer}
+#map .ob:hover{filter:brightness(1.07)}
+#map .ob.sel{filter:drop-shadow(0 0 4px #fff)}
+#map .tl:hover{filter:brightness(1.06)}
+.zl{font:800 15px var(--display);fill:#fff}
+.bn{font:800 12px var(--display);fill:#10303c}
+.fx{font:800 18px var(--display);fill:#fff;stroke:#0a3f58;stroke-width:4px;paint-order:stroke;animation:rise 1.2s ease-out forwards}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-34px);opacity:0}}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:40px;height:40px;border-radius:12px;border:0;background:#fff;color:var(--ink);font-size:22px;font-weight:800;box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.modebar{position:absolute;left:10px;right:60px;bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(10,63,88,.9);color:#fff;border-radius:14px;padding:8px 8px 8px 14px;font-weight:800}
+.modebar[hidden]{display:none}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.kpis div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.kpis span{font-size:12.5px;font-weight:700;color:#4d6c77}
+.kpis b{font-family:var(--display);font-size:20px;font-variant-numeric:tabular-nums}
+.meter.sm{height:7px;margin:4px 0 2px}
+.warn{margin:10px 0 0;padding:8px 12px;border-radius:12px;background:#fde3df;color:#9b2b21;font-weight:700;font-size:14px}
+.qrow{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1.5px solid var(--line)}
+.qrow:first-child{border-top:0}
+.qrow .qt{flex:1;font-weight:800;min-width:0}
+.qrow .sub{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:13px;font-weight:700;color:#4d6c77}
+.qrow.ok .qt{color:#1f7a43}
+.gtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.gtab{border:2px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-weight:800;font-size:14px}
+.gtab.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.dec .lk{font-size:12px;color:#4d6c77;font-weight:700;text-align:center}
+.dec .cost{display:flex;flex-wrap:wrap;gap:3px}
+.zrow{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:12px;padding:12px;border-radius:14px;background:#fff7e3;border:2px dashed #f2b134}
+.zrow .sub{display:block;font-size:13px;color:#4d6c77;font-weight:700;margin:2px 0 4px}
+#selbox{border:3px solid var(--coral)}
+#selbox[hidden]{display:none}
+.selh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.selh h2{margin:0;font-family:var(--display);font-size:24px}
+.selh small{font-size:15px;color:#4d6c77}
+.selb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.selb .cost{display:flex;gap:4px;flex-wrap:wrap}
+.side h2{margin:0 0 8px}
+#map .ob.nat.lk{opacity:.7}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -220,71 +266,68 @@ footer button{background:none;border:0;color:#9fd2dc;text-decoration:underline;p
   <header>
     <div class="brand">
       <h1>Bilgi Adası</h1>
-      <p>Bulmacaları çöz, kaynak topla, adanı büyüt.</p>
+      <p>Bulmacaları çöz, şehrini kur, adanı büyüt.</p>
     </div>
     <div class="bar">
-      <button id="who" class="ghost who" type="button" aria-label="Oyuncu değiştir"></button>
+      <button id="who" class="ghost who" type="button" aria-label="Oyuncu değiştir" hidden></button>
       <div id="res" class="bar" aria-label="Kaynaklar"></div>
       <button id="mute" class="ghost" type="button" aria-pressed="false">Ses açık</button>
     </div>
   </header>
 
   <main>
-    <section class="stage" aria-label="Adan">
-      <nav class="tabs" id="tabs" aria-label="Bölgeler"></nav>
-      <svg id="island" viewBox="0 0 800 520" role="group" aria-label="Ada haritası">
-        <defs>
-          <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#4cc9d6"/>
-            <stop offset=".55" stop-color="#1f93b5"/>
-            <stop offset="1" stop-color="#11678f"/>
-          </linearGradient>
-          <radialGradient id="shallow" cx=".5" cy=".5" r=".5">
-            <stop offset=".78" stop-color="#9eeaf0" stop-opacity=".75"/>
-            <stop offset="1" stop-color="#9eeaf0" stop-opacity="0"/>
-          </radialGradient>
-          <linearGradient id="sandG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#fbe7b8"/><stop offset="1" stop-color="#e8c47e"/>
-          </linearGradient>
-          <radialGradient id="grassKoy" cx=".42" cy=".35" r=".75">
-            <stop offset="0" stop-color="#9ad97f"/><stop offset="1" stop-color="#4fa24e"/>
-          </radialGradient>
-          <radialGradient id="grassKasaba" cx=".42" cy=".35" r=".75">
-            <stop offset="0" stop-color="#b5dd7a"/><stop offset="1" stop-color="#5f9f45"/>
-          </radialGradient>
-          <radialGradient id="grassIlce" cx=".42" cy=".35" r=".75">
-            <stop offset="0" stop-color="#8fd18a"/><stop offset="1" stop-color="#3c8a55"/>
-          </radialGradient>
-          <radialGradient id="sunG"><stop offset="0" stop-color="#fff6c9"/><stop offset="1" stop-color="#fff6c9" stop-opacity="0"/></radialGradient>
-        </defs>
-        <rect width="800" height="520" fill="url(#seaG)"/>
-        <circle cx="720" cy="60" r="90" fill="url(#sunG)" opacity=".55"/>
-        <g id="waves"></g>
-        <g id="ground"></g>
-        <g id="dyn"></g>
-        <g id="sky" pointer-events="none"></g>
-      </svg>
+    <section class="stage" aria-label="Ada haritası">
+      <div class="mapwrap">
+        <svg id="map" role="application" aria-label="Ada haritası. Sürükleyerek gez, yakınlaşmak için tekerleği ya da iki parmağı kullan." tabindex="0">
+          <defs>
+            <pattern id="wavesP" width="120" height="60" patternUnits="userSpaceOnUse">
+              <path d="M8 20 q10 -6 20 0 t20 0" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M68 48 q8 -5 16 0 t16 0" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2" stroke-linecap="round"/>
+            </pattern>
+            <radialGradient id="shoreG" cx=".5" cy=".5" r=".5">
+              <stop offset=".62" stop-color="#8fe3ea" stop-opacity=".85"/>
+              <stop offset="1" stop-color="#8fe3ea" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect x="-2000" y="-1400" width="4000" height="3600" fill="#1f93b5"/>
+          <rect x="-2000" y="-1400" width="4000" height="3600" fill="url(#wavesP)" class="wv"/>
+          <ellipse cx="0" cy="352" rx="700" ry="360" fill="url(#shoreG)"/>
+          <g id="tiles"></g>
+          <g id="over"></g>
+          <g id="objs"></g>
+          <g id="walk" pointer-events="none"></g>
+          <g id="fx" pointer-events="none"></g>
+          <g id="boats" pointer-events="none"></g>
+        </svg>
+        <div class="zoom">
+          <button type="button" id="zin" aria-label="Yakınlaş">+</button>
+          <button type="button" id="zout" aria-label="Uzaklaş">−</button>
+          <button type="button" id="zhome" aria-label="Merkeze dön">◎</button>
+        </div>
+        <div class="modebar" id="modebar" hidden><span id="modetxt"></span><button type="button" class="btn alt" id="cancel">Bitir</button></div>
+      </div>
       <div class="status" id="status" aria-live="polite"></div>
     </section>
 
     <aside class="side">
-      <section class="card" id="levelCard"></section>
+      <section class="card" id="selbox" hidden></section>
+      <section class="card" id="city"></section>
       <section class="card">
-        <h2 id="bTitle">Binalar</h2>
-        <ul class="list" id="blist"></ul>
+        <h2>Görevler</h2>
+        <ul class="list" id="quests"></ul>
       </section>
       <section class="card">
-        <h2>Süsler</h2>
-        <div class="decs" id="decs"></div>
-        <button id="undo" class="btn alt undo" type="button">Son süsü geri al</button>
-        <p class="note">Bir süs seç, sonra adada bir yere dokun. Kayığı denize koy.</p>
+        <h2>İnşa et</h2>
+        <div class="gtabs" id="gtabs"></div>
+        <div class="decs" id="shop"></div>
+        <div id="zonebox"></div>
       </section>
     </aside>
   </main>
 
   <footer>
     <span>Oyuncular ve ilerlemeleri yalnızca bu cihazda saklanır.</span>
-    <button id="reset" type="button">Adayı sıfırla</button>
+    <button id="reset" type="button">Adayı baştan başlat</button>
   </footer>
 </div>
 
@@ -513,29 +556,11 @@ var TF=[
 ];
 var BASKENT=[['Türkiye','Ankara'],['Fransa','Paris'],['Japonya','Tokyo'],['İtalya','Roma'],['Almanya','Berlin'],['Mısır','Kahire'],['Kanada','Ottawa'],['Rusya','Moskova'],['İspanya','Madrid'],['Yunanistan','Atina'],['İngiltere','Londra'],['Avustralya','Canberra']];
 var ESANLAM=[['siyah','kara'],['beyaz','ak'],['kırmızı','al'],['cevap','yanıt'],['misafir','konuk'],['ırmak','nehir'],['yıl','sene'],['ad','isim'],['hediye','armağan'],['öykü','hikâye'],['sınav','imtihan'],['okul','mektep'],['doktor','hekim'],['kelime','sözcük'],['sonbahar','güz'],['yaşlı','ihtiyar'],['hızlı','çabuk'],['zor','güç'],['ev','konut'],['öğrenci','talebe']];
-
-/* ---------- durum ---------- */
-var KEY='bilgiAdasi.v1';
-var state=null, selDecor=null, round=null, justBuilt=null, resetArm=false;
-function defaults(){return {res:{odun:0,tas:0,tohum:0},built:['kutuphane'],decor:[],played:0,mute:false,regions:['koy'],view:'koy'};}
-function sane(s){
-  var d=defaults();
-  if(!s||typeof s!=='object'||!Array.isArray(s.built)) return null;
-  d.res={odun:+(s.res&&s.res.odun)||0,tas:+(s.res&&s.res.tas)||0,tohum:+(s.res&&s.res.tohum)||0};
-  d.built=s.built.filter(function(id){return BUILDINGS.some(function(b){return b.id===id;});});
-  if(d.built.indexOf('kutuphane')<0) d.built.unshift('kutuphane');
-  d.regions=(Array.isArray(s.regions)?s.regions:[]).filter(function(r){return rById(r);});
-  if(d.regions.indexOf('koy')<0) d.regions.unshift('koy');
-  d.view=d.regions.indexOf(s.view)>=0?s.view:'koy';
-  d.built=d.built.filter(function(id){return d.regions.indexOf(bById(id).region)>=0;});
-  d.decor=(Array.isArray(s.decor)?s.decor:[]).filter(function(x){return x&&DECOR[x.id]&&isFinite(x.x)&&isFinite(x.y);}).map(function(x){return {id:x.id,x:x.x,y:x.y,r:rById(x.r)?x.r:'koy'};});
-  d.played=+s.played||0; d.mute=!!s.mute;
-  return d;
-}
-/* oyuncu profilleri: her oyuncunun adası ayrı anahtarda */
 var PKEY='bilgiAdasi.profiles', profiles={list:[],current:null}, prof=null, delArm=null;
-function skey(id){return 'bilgiAdasi.p.'+(id||(prof&&prof.id));}
-function loadLS(){if(!prof)return null;try{return sane(JSON.parse(localStorage.getItem(skey())));}catch(e){return null;}}
+function skey(id){return 'bilgiAdasi.p3.'+(id||(prof&&prof.id));}
+function loadFor(id){try{var s=sane3(JSON.parse(localStorage.getItem(skey(id))));if(s)return s;}catch(e){}
+  try{var old=JSON.parse(localStorage.getItem('bilgiAdasi.p.'+id));if(old&&old.res)return migrate(old);}catch(e){}return null;}
+function loadLS(){return prof?loadFor(prof.id):null;}
 function save(){if(!prof)return;try{localStorage.setItem(skey(),JSON.stringify(state));}catch(e){}}
 function loadProfiles(){try{var v=JSON.parse(localStorage.getItem(PKEY));if(v&&Array.isArray(v.list))return {list:v.list.filter(function(p){return p&&p.id&&p.name;}),current:v.current};}catch(e){}return {list:[],current:null};}
 function saveProfiles(){try{localStorage.setItem(PKEY,JSON.stringify(profiles));}catch(e){}}
@@ -550,13 +575,12 @@ var AVATARS={
 };
 function avatarSVG(k){var a=AVATARS[k]||AVATARS.agac;return '<svg viewBox="-30 -50 60 60" aria-hidden="true"><circle cx="0" cy="-20" r="29" fill="'+a.bg+'" stroke="#10303c" stroke-width="2"/><g transform="'+a.t+'">'+a.d()+'</g></svg>';}
 function esc(t){return String(t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function levelOf(st){var sc=st.built.length*10+(st.regions.length-1)*20+st.decor.length*2,li=0;LEVELS.forEach(function(l,i){if(sc>=l[0])li=i;});return LEVELS[li][1]+' · '+sc+' puan';}
 var newAv='agac';
 function renderLogin(){
   var list=profiles.list;
   var html='<h2 id="loginTitle" class="lt">Kim oynuyor?</h2><p class="lsub">'+(list.length?'Adana dönmek için adına dokun.':'Hoş geldin! Önce kendine bir oyuncu oluştur.')+'</p>';
   if(list.length) html+='<div class="plist">'+list.map(function(p){
-    var st=null;try{st=sane(JSON.parse(localStorage.getItem(skey(p.id))));}catch(e){}
+    var st=loadFor(p.id);
     return '<div class="pitem"><button type="button" class="pbtn'+(prof&&prof.id===p.id?' cur':'')+'" data-prof="'+p.id+'">'+avatarSVG(p.av)+'<div><strong>'+esc(p.name)+'</strong><span>'+(st?levelOf(st):'Yeni oyuncu')+'</span></div></button>'+
       '<button type="button" class="pdel" data-pdel="'+p.id+'" aria-label="'+esc(p.name)+' oyuncusunu sil">'+(delArm===p.id?'Emin misin?':'Sil')+'</button></div>';
   }).join('')+'</div>';
@@ -573,8 +597,8 @@ function selectProfile(id,quiet){
   var p=profiles.list.filter(function(x){return x.id===id;})[0];
   if(!p) return;
   prof=p;profiles.current=id;saveProfiles();
-  state=loadLS()||defaults();selDecor=null;round=null;loadSeen();
-  $('#login').hidden=true;refresh();
+  state=loadLS()||newGame();mode=null;sel=null;round=null;loadSeen();tick();save();
+  $('#login').hidden=true;renderTiles();refresh();centerCam();
   if(!quiet) toast('Hoş geldin, '+p.name+'!');
 }
 function createProfile(name,av){
@@ -583,35 +607,20 @@ function createProfile(name,av){
   if(profiles.list.some(function(p){return p.name.toLocaleLowerCase('tr')===name.toLocaleLowerCase('tr');})){toast('Bu adda bir oyuncu zaten var.');return;}
   var id='p'+Date.now().toString(36)+rnd(10,99);
   // eski tek oyunculu kaydı ilk oyuncuya taşı
-  if(!profiles.list.length){try{var old=localStorage.getItem('bilgiAdasi.v1');if(old){localStorage.setItem(skey(id),old);}var os=localStorage.getItem('bilgiAdasi.seen');if(os)localStorage.setItem('bilgiAdasi.seen.'+id,os);}catch(e){}}
+  if(!profiles.list.length){try{var old=localStorage.getItem('bilgiAdasi.v1');if(old){localStorage.setItem('bilgiAdasi.p.'+id,old);}var os=localStorage.getItem('bilgiAdasi.seen');if(os)localStorage.setItem('bilgiAdasi.seen.'+id,os);}catch(e){}}
   profiles.list.push({id:id,name:name,av:AVATARS[av]?av:'agac'});
   selectProfile(id);
 }
 function deleteProfile(id){
   if(delArm!==id){delArm=id;renderLogin();return;}
   delArm=null;
-  try{localStorage.removeItem(skey(id));localStorage.removeItem('bilgiAdasi.seen.'+id);}catch(e){}
+  try{localStorage.removeItem(skey(id));localStorage.removeItem('bilgiAdasi.p.'+id);localStorage.removeItem('bilgiAdasi.seen.'+id);}catch(e){}
   profiles.list=profiles.list.filter(function(p){return p.id!==id;});
-  if(prof&&prof.id===id){prof=null;profiles.current=null;state=defaults();refresh();}
+  if(prof&&prof.id===id){prof=null;profiles.current=null;state=newGame();renderTiles();refresh();}
   saveProfiles();renderLogin();
 }
 function renderWho(){var w=$('#who');if(!prof){w.hidden=true;return;}w.hidden=false;w.innerHTML=avatarSVG(prof.av)+'<span>'+esc(prof.name)+'</span>';}
-
-/* ---------- yardımcılar ---------- */
 function bById(id){return BUILDINGS.filter(function(b){return b.id===id;})[0];}
-function rById(id){return REGIONS.filter(function(r){return r.id===id;})[0];}
-function inRegion(r){return BUILDINGS.filter(function(b){return b.region===r;});}
-function isOpen(r){return state.regions.indexOf(r)>=0;}
-function regionDone(r){return inRegion(r).every(function(b){return state.built.indexOf(b.id)>=0;});}
-function canUnlock(r){var R=rById(r);return !isOpen(r)&&R.need&&regionDone(R.need)&&canPay(R.cost);}
-function unlockRegion(r){
-  var R=rById(r);
-  if(isOpen(r)) return;
-  if(!regionDone(R.need)){toast('Önce '+rById(R.need).name+' bölgesindeki bütün binaları kur.');return;}
-  if(!canPay(R.cost)){toast(R.name+' için '+costText(R.cost)+' gerekiyor.');return;}
-  pay(R.cost,-1);state.regions.push(r);state.view=r;selDecor=null;
-  good();setTimeout(function(){beep(1046,.2);},260);save();refresh();toast(R.name+' açıldı! Yeni arsalar seni bekliyor.');
-}
 function canPay(cost){return Object.keys(cost).every(function(k){return state.res[k]>=cost[k];});}
 function pay(cost,sign){Object.keys(cost).forEach(function(k){state.res[k]+=sign*cost[k];});}
 function costText(cost){var t=Object.keys(cost).map(function(k){return cost[k]+' '+RES[k].name.toLowerCase();});return t.length?t.join(' · '):'ücretsiz';}
@@ -635,197 +644,482 @@ function beep(f,d,type){
 }
 function good(){beep(660,.12);setTimeout(function(){beep(880,.16);},110);}
 function bad(){beep(190,.25,'triangle');}
+/* ================= ŞEHİR KURMA KATMANI (v3) ================= */
+RES.yildiz={name:'Bilgi yıldızı',svg:'<svg '+ICON+'><path d="M10 1.8l2.5 5.2 5.6.8-4.1 3.9 1 5.6-5-2.7-5 2.7 1-5.6-4.1-3.9 5.6-.8z" fill="#ffd166" stroke="#c99a1e" stroke-width="1.2" stroke-linejoin="round"/></svg>'};
+RKEYS=['odun','tas','tohum','yildiz'];
 
-/* ---------- ada çizimi ---------- */
-function buildWaves(){
+var N=22, TW=64, TH=32, C=(N-1)/2;
+var ZONES=[
+  {id:'koy',name:'Köy',r:4.3,need:null},
+  {id:'kasaba',name:'Kasaba',r:6.9,need:{pop:16,yildiz:15},cost:{odun:10,tas:10,tohum:10}},
+  {id:'ilce',name:'İlçe',r:99,need:{pop:40,yildiz:45},cost:{odun:20,tas:20,tohum:20}}
+];
+function zById(id){return ZONES.filter(function(z){return z.id===id;})[0];}
+function zIndex(id){for(var i=0;i<ZONES.length;i++)if(ZONES[i].id===id)return i;return 0;}
+
+/* --- arazi --- */
+function hash(i,j){var h=Math.sin(i*127.1+j*311.7)*43758.5453;return h-Math.floor(h);}
+var TILES=[];
+(function(){
+  for(var i=0;i<N;i++){TILES[i]=[];for(var j=0;j<N;j++){
+    var d=Math.sqrt((i-C)*(i-C)+(j-C)*(j-C))+(hash(i,j)-.5)*1.1+Math.sin(i*.7)*.35+Math.cos(j*.6)*.35;
+    var t=d<8.4?'grass':d<9.5?'sand':'water';
+    var z=d<ZONES[0].r?'koy':d<ZONES[1].r?'kasaba':'ilce';
+    TILES[i][j]={t:t,z:z,d:d,v:hash(j,i)};
+  }}
+})();
+function tile(i,j){return i>=0&&j>=0&&i<N&&j<N?TILES[i][j]:null;}
+function iso(i,j){return {x:(i-j)*TW/2,y:(i+j)*TH/2};}
+function key(i,j){return i+','+j;}
+function unkey(k){var p=k.split(',');return [+p[0],+p[1]];}
+function zoneOpen(z){return state.zones.indexOf(z)>=0;}
+function tileOpen(i,j){var t=tile(i,j);return t&&t.t!=='water'&&zoneOpen(t.z);}
+
+/* --- katalog --- */
+function house(lv,roof){
+  if(lv===1) return OL+'<rect x="-18" y="-24" width="36" height="24" rx="2" fill="#fff4dc"/><polygon points="-23,-24 0,-42 23,-24" fill="'+roof+'"/><rect x="-5" y="-14" width="10" height="14" rx="2" fill="#8a5a33"/><rect x="8" y="-19" width="7" height="7" fill="#bfe6f5" stroke-width="1.5"/></g>';
+  if(lv===2) return OL+'<rect x="-20" y="-42" width="40" height="42" rx="2" fill="#fde9c8"/><polygon points="-25,-42 0,-60 25,-42" fill="'+roof+'"/><rect x="-14" y="-34" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/><rect x="5" y="-34" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/><rect x="-14" y="-18" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/><rect x="3" y="-16" width="11" height="16" rx="2" fill="#8a5a33"/><rect x="10" y="-66" width="6" height="14" fill="#c8a26b"/></g>';
+  return OL+'<rect x="-24" y="-66" width="48" height="66" rx="2" fill="#f3d9a1"/><rect x="-27" y="-70" width="54" height="7" rx="2" fill="'+roof+'"/>'+
+    [-56,-42,-28].map(function(y){return '<rect x="-17" y="'+y+'" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/><rect x="-4" y="'+y+'" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/><rect x="9" y="'+y+'" width="9" height="9" fill="#bfe6f5" stroke-width="1.5"/>';}).join('')+
+    '<rect x="-6" y="-14" width="12" height="14" rx="2" fill="#3b6ea5"/></g>';
+}
+var ROOFS=['#e4572e','#3b6ea5','#2f7f7a','#7b5ea7','#c8453b'];
+var PROD_DRAW={
+  oduncu:OL+'<rect x="-22" y="-26" width="34" height="26" rx="2" fill="#b9773f"/><path d="M-22 -18 H12 M-22 -9 H12" stroke-width="1.5"/><polygon points="-27,-26 -5,-42 17,-26" fill="#8a5a33"/><rect x="-10" y="-14" width="9" height="14" fill="#5a3a1f"/><g transform="translate(20 -2)"><rect x="-6" y="-8" width="14" height="8" rx="4" fill="#e3b27a"/><rect x="-6" y="-15" width="14" height="8" rx="4" fill="#e3b27a"/><circle cx="8" cy="-4" r="2" fill="#b9773f" stroke-width="1"/></g></g>',
+  tasocagi:OL+'<path d="M-26 0 L-20 -22 L-6 -30 L8 -24 L14 -8 L8 0 Z" fill="#a3b0ba"/><path d="M-6 -30 L-2 -12 L8 -24" fill="none" stroke-width="1.5"/><g transform="translate(16 0)"><rect x="-8" y="-12" width="18" height="9" rx="2" fill="#8a5a33"/><circle cx="-4" cy="-2" r="3" fill="#4b5d68"/><circle cx="6" cy="-2" r="3" fill="#4b5d68"/><circle cx="-2" cy="-14" r="3.5" fill="#9aa8b3"/><circle cx="4" cy="-15" r="3" fill="#9aa8b3"/></g></g>',
+  tarla:'<polygon points="0,-14 28,0 0,14 -28,0" fill="#9b6b3c" transform="translate(0 -2)"/>'+
+    '<g stroke="#6cc24a" stroke-width="4" stroke-linecap="round"><path d="M-18 -4 l14 7 M-10 -8 l14 7 M-2 -12 l14 7 M-12 2 l14 7 M-4 -2 l14 7 M4 -6 l14 7"/></g>'+
+    OL+'<line x1="14" y1="-2" x2="14" y2="-30"/><line x1="6" y1="-22" x2="22" y2="-22"/><circle cx="14" cy="-33" r="5" fill="#f3d9a1"/><path d="M8 -36 h12 l-3 -5 h-6z" fill="#e4572e" stroke-width="1.5"/></g>'
+};
+var NAT_DRAW={
+  tree:function(v){var s=(.8+v*.35).toFixed(2);return '<g transform="scale('+s+')">'+OL+'<rect x="-3" y="-14" width="6" height="14" fill="#8a5a33"/><circle cx="0" cy="-30" r="14" fill="'+(v>.5?'#3f9b4a':'#2f8a43')+'"/><circle cx="-10" cy="-21" r="9" fill="#4bb057"/><circle cx="10" cy="-21" r="9" fill="#4bb057"/></g></g>';},
+  pine:function(v){var s=(.8+v*.3).toFixed(2);return '<g transform="scale('+s+')">'+OL+'<rect x="-3" y="-10" width="6" height="10" fill="#8a5a33"/><polygon points="0,-48 14,-22 -14,-22" fill="#2f7f3a"/><polygon points="0,-36 16,-8 -16,-8" fill="#3f9b4a"/></g></g>';},
+  rock:function(v){return OL+'<path d="M-16 0 L-12 -12 L-2 -18 L10 -14 L15 -4 L10 2 Z" fill="#a3b0ba"/><path d="M-2 -18 L0 -6 L10 -14" fill="none" stroke-width="1.5"/></g>';}
+};
+
+/* Her öğe: grp (menü sekmesi), cost, zone (gereken bölge), ve türüne göre alanlar */
+var CAT={
+  yol:{grp:'ev',name:'Yol',cost:{tas:1},road:true,sand:true,desc:'Binalar çalışmak için yola bitişik olmalı.'},
+  ev:{grp:'ev',name:'Ev',cost:{odun:4,tas:2},pop:4,desc:'4 kişi yaşar. Yükseltince nüfus artar.'},
+  apartman:{grp:'ev',name:'Apartman',cost:{odun:10,tas:12},pop:12,zone:'kasaba',desc:'12 kişi yaşar.'},
+  oduncu:{grp:'uretim',name:'Oduncu',cost:{tas:2,tohum:3},make:'odun',work:2,desc:'Kendi kendine odun üretir. 2 işçi ister.'},
+  tasocagi:{grp:'uretim',name:'Taş Ocağı',cost:{odun:5},make:'tas',work:2,desc:'Kendi kendine taş üretir. 2 işçi ister.'},
+  tarla:{grp:'uretim',name:'Tarla',cost:{odun:3,tas:2},make:'tohum',work:2,desc:'Kendi kendine tohum üretir. 2 işçi ister.'},
+  agac:{grp:'sus',name:'Ağaç',cost:{tohum:3},happy:2,sand:true},
+  cicek:{grp:'sus',name:'Çiçek',cost:{tohum:2},happy:1,sand:true},
+  fener:{grp:'sus',name:'Fener',cost:{tas:3},happy:2,sand:true},
+  bayrak:{grp:'sus',name:'Bayrak',cost:{odun:2},happy:1,sand:true},
+  park:{grp:'sus',name:'Park',cost:{tohum:6,odun:2},happy:4,zone:'kasaba'},
+  cesme:{grp:'sus',name:'Çeşme',cost:{tas:8},happy:6,zone:'kasaba'},
+  heykel:{grp:'sus',name:'Heykel',cost:{tas:12,yildiz:5},happy:9,zone:'ilce'}
+};
+CAT.park.draw=OL+'<polygon points="0,-12 24,0 0,12 -24,0" fill="#86cd72" transform="translate(0 -2)"/><rect x="-12" y="-8" width="16" height="4" rx="2" fill="#b9773f"/><line x1="-10" y1="-4" x2="-10" y2="0"/><line x1="2" y1="-4" x2="2" y2="0"/><rect x="10" y="-14" width="3" height="12" fill="#8a5a33" stroke-width="1.5"/><circle cx="11.5" cy="-20" r="8" fill="#4bb057"/></g>';
+CAT.cesme.draw=OL+'<ellipse cx="0" cy="-4" rx="22" ry="10" fill="#d9c9a3"/><ellipse cx="0" cy="-6" rx="16" ry="6" fill="#7fd3e6"/><rect x="-3" y="-24" width="6" height="18" fill="#d9c9a3"/><ellipse cx="0" cy="-24" rx="9" ry="3.5" fill="#d9c9a3"/></g><path class="glow" d="M0 -26 q-8 -14 -12 -2 M0 -26 q8 -14 12 -2" fill="none" stroke="#bfeefa" stroke-width="3" stroke-linecap="round"/>';
+CAT.heykel.draw=OL+'<rect x="-14" y="-14" width="28" height="14" rx="2" fill="#d9c9a3"/><rect x="-5" y="-40" width="10" height="26" rx="4" fill="#b8c4cc"/><circle cx="0" cy="-46" r="7" fill="#b8c4cc"/><line x1="5" y1="-34" x2="16" y2="-48" stroke-width="5" stroke="#b8c4cc"/><path d="M14 -52 l4 6 -6 1z" fill="#ffd166" stroke-width="1.5"/></g>';
+['agac','cicek','fener','bayrak'].forEach(function(k){CAT[k].draw=DECOR[k].draw;});
+// bilgi binaları: eski binalar, bölgeleri gereken bölge olur
+BUILDINGS.forEach(function(b){
+  CAT[b.id]={grp:'bilgi',name:b.name,cost:b.cost,zone:b.region,know:b,unique:true,desc:b.skill+' bulmacaları. Kazanç: '+RES[b.res].name.toLowerCase()+' ve bilgi yıldızı.',draw:'<g transform="scale(.6)">'+b.draw+'</g>'};
+});
+CAT.kutuphane.cost={};
+var GROUPS=[['ev','Ev ve yol'],['uretim','Üretim'],['bilgi','Bilgi binaları'],['sus','Süsler']];
+
+function objDraw(o,i,j){
+  var c=CAT[o.t];
+  if(o.t==='ev') return '<g transform="scale(.92)">'+house(o.lv,ROOFS[Math.floor(TILES[i][j].v*ROOFS.length)])+'</g>';
+  if(o.t==='apartman') return '<g transform="scale(1.05)">'+house(3,ROOFS[Math.floor(TILES[i][j].v*ROOFS.length)])+'</g>';
+  if(PROD_DRAW[o.t]) return PROD_DRAW[o.t];
+  return c.draw;
+}
+
+/* --- durum --- */
+var state=null, round=null, resetArm=false, mode=null, sel=null, justPlaced=null, grp='ev';
+function newGame(){
+  var s={v:3,res:{odun:6,tas:4,tohum:4,yildiz:0},zones:['koy'],obj:{},nat:{},played:0,perfect:0,cleared:0,qdone:[],mute:false,last:Date.now()};
+  var c=Math.round(C);
+  // başlangıç: kütüphane, bir ev ve küçük bir yol
+  [[c,c],[c+1,c],[c-1,c],[c,c+1],[c,c-1]].forEach(function(p){s.obj[key(p[0],p[1])]={t:'yol',lv:1};});
+  s.obj[key(c+1,c+1)]={t:'kutuphane',lv:1};
+  s.obj[key(c-1,c-1)]={t:'ev',lv:1};
+  // doğa: ağaçlar ve kayalar
+  for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+    var t=TILES[i][j];if(t.t!=='grass'||s.obj[key(i,j)])continue;
+    if(Math.abs(i-c)<=1&&Math.abs(j-c)<=1)continue;
+    var h=hash(i*3+1,j*7+2);
+    if(h<.16)s.nat[key(i,j)]=t.d>6?'pine':'tree';else if(h<.22)s.nat[key(i,j)]='rock';
+  }
+  return s;
+}
+function sane3(s){
+  if(!s||typeof s!=='object'||s.v!==3||!s.obj) return null;
+  var d=newGame();
+  d.res={};['odun','tas','tohum','yildiz'].forEach(function(k){d.res[k]=Math.max(0,+(s.res&&s.res[k])||0);});
+  d.zones=(Array.isArray(s.zones)?s.zones:['koy']).filter(function(z){return zById(z);});if(d.zones.indexOf('koy')<0)d.zones.unshift('koy');
+  d.obj={};Object.keys(s.obj).forEach(function(k){var o=s.obj[k],p=unkey(k);if(o&&CAT[o.t]&&tile(p[0],p[1])&&tile(p[0],p[1]).t!=='water')d.obj[k]={t:o.t,lv:Math.min(3,Math.max(1,+o.lv||1)),st:+o.st||0};});
+  d.nat={};Object.keys(s.nat||{}).forEach(function(k){if(NAT_DRAW[s.nat[k]]&&!d.obj[k])d.nat[k]=s.nat[k];});
+  ['played','perfect','cleared'].forEach(function(k){d[k]=+s[k]||0;});
+  d.qdone=Array.isArray(s.qdone)?s.qdone.map(Boolean):[];d.mute=!!s.mute;d.last=+s.last||Date.now();
+  return d;
+}
+// eski (v2) kayıttan taşıma: kaynaklar, bölgeler ve kurulmuş bilgi binaları korunur
+function migrate(old){
+  var s=newGame();
+  if(!old||!old.res) return s;
+  ['odun','tas','tohum'].forEach(function(k){s.res[k]=Math.max(0,+old.res[k]||0);});
+  s.played=+old.played||0;s.res.yildiz=Math.min(60,s.played*2);
+  (old.regions||[]).forEach(function(r){if(zById(r)&&s.zones.indexOf(r)<0)s.zones.push(r);});
+  (old.built||[]).forEach(function(id){if(CAT[id]&&id!=='kutuphane')autoPlace(s,id);});
+  return s;
+}
+function autoPlace(s,t){
+  var best=null;
+  for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+    var tl=TILES[i][j];if(tl.t!=='grass'||s.zones.indexOf(tl.z)<0||s.obj[key(i,j)])continue;
+    var near=[[1,0],[-1,0],[0,1],[0,-1]].some(function(d){var o=s.obj[key(i+d[0],j+d[1])];return o&&o.t==='yol';});
+    var sc=tl.d+(near?0:3);if(!best||sc<best[2])best=[i,j,sc,near];
+  }
+  if(!best) return;
+  delete s.nat[key(best[0],best[1])];s.obj[key(best[0],best[1])]={t:t,lv:1};
+  if(!best[3]){[[1,0],[0,1],[-1,0],[0,-1]].some(function(d){var k=key(best[0]+d[0],best[1]+d[1]),tl=tile(best[0]+d[0],best[1]+d[1]);if(tl&&tl.t!=='water'&&!s.obj[k]){delete s.nat[k];s.obj[k]={t:'yol',lv:1};return true;}return false;});}
+}
+
+/* --- hesaplar --- */
+function hasRoad(i,j){return [[1,0],[-1,0],[0,1],[0,-1]].some(function(d){var o=state.obj[key(i+d[0],j+d[1])];return o&&o.t==='yol';});}
+function works(k){var o=state.obj[k],c=CAT[o.t];if(c.road||c.happy)return true;var p=unkey(k);return hasRoad(p[0],p[1]);}
+function stats(st){
+  st=st||state;
+  var m={pop:0,houses:0,roads:0,work:0,prod:0,know:0,decor:0,happyPts:0,maxLv:1,cut:0,types:{}};
+  var save=state;state=st;
+  Object.keys(st.obj).forEach(function(k){
+    var o=st.obj[k],c=CAT[o.t];m.types[o.t]=(m.types[o.t]||0)+1;if(o.lv>m.maxLv&&!c.road&&!c.happy)m.maxLv=o.lv;
+    var ok=works(k);if(!ok)m.cut++;
+    if(c.road)m.roads++;
+    else if(c.pop){m.houses++;if(ok)m.pop+=c.pop*o.lv;}
+    else if(c.make){m.prod++;if(ok)m.work+=c.work;}
+    else if(c.know){m.know++;}
+    else if(c.happy){m.decor++;m.happyPts+=c.happy;}
+  });
+  state=save;
+  m.happy=Math.max(5,Math.min(100,Math.round(55+m.happyPts*1.5+m.know*2-m.houses*3)));
+  m.workRatio=m.work?Math.min(1,m.pop/m.work):1;
+  m.speed=m.workRatio*(.5+m.happy/100);
+  return m;
+}
+var TITLES=[[0,'Issız Kumsal'],[4,'Küçük Köy'],[12,'Şirin Köy'],[24,'Kasaba'],[40,'Büyük Kasaba'],[64,'İlçe'],[100,'Bilgelik Şehri']];
+function titleOf(pop){var t=TITLES[0][1];TITLES.forEach(function(x){if(pop>=x[0])t=x[1];});return t;}
+function levelOf(st){var m=stats(st);return titleOf(m.pop)+' · '+m.pop+' nüfus';}
+var RATE=1/40; // seviye 1: 40 saniyede 1 kaynak (tam hızda)
+function capOf(o){return 6*o.lv+4;}
+function tick(){
+  var now=Date.now(),dt=Math.min(8*3600,Math.max(0,(now-state.last)/1000));state.last=now;
+  if(!dt) return false;
+  var m=stats(),changed=false;
+  Object.keys(state.obj).forEach(function(k){
+    var o=state.obj[k],c=CAT[o.t];if(!c.make||!works(k))return;
+    var before=Math.floor(o.st||0);o.st=Math.min(capOf(o),(o.st||0)+dt*RATE*o.lv*m.speed);
+    if(Math.floor(o.st)!==before)changed=true;
+  });
+  return changed;
+}
+
+/* --- görevler --- */
+var QUESTS=[
+  {t:'Ağaçlara ve kayalara dokunup 3 kez kaynak topla',p:function(m){return [state.cleared,3];},rw:{tohum:3}},
+  {t:'Kütüphanede bir bulmaca turu oyna',p:function(m){return [state.played,1];},rw:{odun:3}},
+  {t:'Yola bitişik ikinci bir ev kur',p:function(m){return [Math.min(m.houses-m.cutHouses,2),2];},rw:{tas:3}},
+  {t:'Bir oduncu kur',p:function(m){return [m.types.oduncu||0,1];},rw:{tas:4}},
+  {t:'Nüfusu 12 yap',p:function(m){return [m.pop,12];},rw:{tohum:5,odun:3}},
+  {t:'Gözlemevini kur',p:function(m){return [m.types.gozlemevi||0,1];},rw:{yildiz:3}},
+  {t:'Adaya 3 süs koy',p:function(m){return [m.decor,3];},rw:{odun:5}},
+  {t:'Bir binayı 2. seviyeye çıkar',p:function(m){return [m.maxLv>=2?1:0,1];},rw:{yildiz:4}},
+  {t:'Kusursuz bir tur çıkar (hepsi doğru)',p:function(m){return [state.perfect,1];},rw:{tas:5}},
+  {t:'Üç üretim binası çalıştır',p:function(m){return [m.prod,3];},rw:{tohum:6}},
+  {t:'Kasaba bölgesini aç',p:function(m){return [state.zones.length>1?1:0,1];},rw:{odun:8,tas:8,tohum:8}},
+  {t:'6 bilgi binası kur',p:function(m){return [m.know,6];},rw:{yildiz:8}},
+  {t:'Nüfusu 30 yap',p:function(m){return [m.pop,30];},rw:{odun:10,tas:10}},
+  {t:'Mutluluğu yüzde 80\'e çıkar',p:function(m){return [m.happy,80];},rw:{yildiz:6}},
+  {t:'İlçe bölgesini aç',p:function(m){return [state.zones.length>2?1:0,1];},rw:{odun:15,tas:15,tohum:15}},
+  {t:'Bütün bilgi binalarını kur',p:function(m){return [m.know,BUILDINGS.length];},rw:{yildiz:20}},
+  {t:'Nüfusu 100 yap ve Bilgelik Şehri ol',p:function(m){return [m.pop,100];},rw:{yildiz:30}}
+];
+function questState(){
+  var m=stats();
+  m.cutHouses=Object.keys(state.obj).filter(function(k){return CAT[state.obj[k].t].pop&&!works(k);}).length;
+  var out=[];
+  QUESTS.forEach(function(q,i){if(state.qdone[i]||out.length>=3)return;var p=q.p(m);out.push({i:i,q:q,cur:Math.min(p[0],p[1]),max:p[1],ok:p[0]>=p[1]});});
+  return out;
+}
+function claimQuest(i){
+  var q=QUESTS[i],list=questState().filter(function(x){return x.i===i&&x.ok;});
+  if(!list.length) return;
+  state.qdone[i]=true;pay(q.rw,1);good();save();
+  toast('Görev tamam! Ödül: '+costText(q.rw)+'.');refresh(q.rw);
+}
+
+/* --- kamera ve çizim --- */
+var cam={x:0,y:Math.round(C)*TH,z:1}, view={w:800,h:520};
+function fitView(){
+  var svg=$('#map'),r=svg.getBoundingClientRect();
+  view.w=r.width||800;view.h=r.height||520;
+  applyCam();
+}
+function applyCam(){
+  cam.z=Math.max(.45,Math.min(2.6,cam.z));
+  var minX=-N*TW/2,maxX=N*TW/2,minY=0,maxY=N*TH;
+  cam.x=Math.max(minX,Math.min(maxX,cam.x));cam.y=Math.max(minY,Math.min(maxY,cam.y));
+  var w=view.w/cam.z,h=view.h/cam.z;
+  $('#map').setAttribute('viewBox',(cam.x-w/2).toFixed(1)+' '+(cam.y-h/2).toFixed(1)+' '+w.toFixed(1)+' '+h.toFixed(1));
+}
+function diamond(x,y){return (x)+','+(y-TH/2)+' '+(x+TW/2)+','+y+' '+x+','+(y+TH/2)+' '+(x-TW/2)+','+y;}
+function renderTiles(){
+  var out=[],dep=14;
+  var order=[];for(var i=0;i<N;i++)for(var j=0;j<N;j++)order.push([i,j]);
+  order.sort(function(a,b){return (a[0]+a[1])-(b[0]+b[1]);});
+  order.forEach(function(p){
+    var i=p[0],j=p[1],t=TILES[i][j];if(t.t==='water')return;
+    var s=iso(i,j),x=s.x,y=s.y,open=zoneOpen(t.z);
+    var fill=t.t==='sand'?(t.v>.5?'#f6dfa6':'#f0d596'):(t.v>.66?'#7cc865':t.v>.33?'#74c05f':'#6cb858');
+    if(!open) fill=t.t==='sand'?'#cdbb8e':(t.v>.5?'#6f9a6a':'#679263');
+    var r=tile(i+1,j),b=tile(i,j+1);
+    if(!r||r.t==='water') out.push('<polygon points="'+(x+TW/2)+','+y+' '+x+','+(y+TH/2)+' '+x+','+(y+TH/2+dep)+' '+(x+TW/2)+','+(y+dep)+'" fill="#d1a565"/>');
+    if(!b||b.t==='water') out.push('<polygon points="'+x+','+(y+TH/2)+' '+(x-TW/2)+','+y+' '+(x-TW/2)+','+(y+dep)+' '+x+','+(y+TH/2+dep)+'" fill="#b98a4c"/>');
+    out.push('<polygon class="tl" points="'+diamond(x,y)+'" fill="'+fill+'" stroke="'+(open?'rgba(0,0,0,.05)':'rgba(0,0,0,.12)')+'" stroke-width="1" data-t="'+i+','+j+'"/>');
+    if(open&&t.t==='grass'&&t.v>.86) out.push('<path d="M'+(x-6)+' '+(y+2)+' l-2 -6 m2 6 l1 -7 m-1 7 l4 -5" stroke="#3f8f45" stroke-width="1.6" stroke-linecap="round" pointer-events="none"/>');
+  });
+  // kilitli bölge etiketleri
+  ZONES.forEach(function(z,zi){
+    if(zoneOpen(z.id)||!zi) return;
+    var s=iso(Math.round(C)+(zi===1?5:8),Math.round(C)+(zi===1?1:2));
+    out.push('<g transform="translate('+s.x+' '+(s.y-10)+')" pointer-events="none"><rect x="-70" y="-20" width="140" height="40" rx="14" fill="#0a3f58" opacity=".82"/>'+
+      '<g transform="translate(-50 0) scale(.42)">'+OL+'<path d="M-14 -4 V-16 a14 14 0 0 1 28 0 V-4" fill="none" stroke="#fff" stroke-width="7"/><rect x="-21" y="-6" width="42" height="32" rx="7" fill="#ffd166"/></g></g>'+
+      '<text x="8" y="6" text-anchor="middle" class="zl">'+z.name+' · kilitli</text></g>');
+  });
+  $('#tiles').innerHTML=out.join('');
+}
+function bubble(o){
+  var c=CAT[o.t];
+  if(c.make&&o.st>=1) return '<g class="bob" transform="translate(0 -58)"><circle r="13" fill="#fff" stroke="#10303c" stroke-width="2"/><g transform="translate(-9 -9)">'+RES[c.make].svg.replace('width="18" height="18"','width="18" height="18"')+'</g><text x="14" y="-8" class="bn">'+Math.floor(o.st)+'</text></g>';
+  return '';
+}
+function renderObjects(){
+  var items=[];
+  Object.keys(state.nat).forEach(function(k){
+    var p=unkey(k),s=iso(p[0],p[1]);if(!zoneOpen(TILES[p[0]][p[1]].z)&&state.nat[k]==='rock')return;
+    var lk=!zoneOpen(TILES[p[0]][p[1]].z);
+    items.push({d:p[0]+p[1],s:'<g class="ob nat'+(lk?' lk':'')+'" data-t="'+k+'" transform="translate('+s.x+' '+(s.y+6)+')">'+NAT_DRAW[state.nat[k]](TILES[p[0]][p[1]].v)+'</g>'});
+  });
+  Object.keys(state.obj).forEach(function(k){
+    var o=state.obj[k],c=CAT[o.t],p=unkey(k),s=iso(p[0],p[1]);
+    if(c.road){
+      var nb=[[1,0],[-1,0],[0,1],[0,-1]].map(function(d){var q=state.obj[key(p[0]+d[0],p[1]+d[1])];return q&&q.t==='yol';});
+      var road='<polygon points="'+diamond(s.x,s.y)+'" fill="#d8ccb2" stroke="#b9ab8e" stroke-width="1" data-t="'+k+'"/>';
+      var cx=s.x,cy=s.y,ends=[[TW/4,TH/4],[-TW/4,-TH/4],[-TW/4,TH/4],[TW/4,-TH/4]];
+      nb.forEach(function(on,n){if(on)road+='<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+ends[n][0])+'" y2="'+(cy+ends[n][1])+'" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 4" opacity=".8" pointer-events="none"/>';});
+      items.push({d:-1,s:road});return;
+    }
+    var flat=o.t==='tarla'||o.t==='park';
+    var body='<g class="ob'+(k===justPlaced?' pop':'')+(sel===k?' sel':'')+'" data-t="'+k+'" transform="translate('+s.x+' '+(s.y+(flat?2:8))+')">'+
+      (flat?'':'<ellipse cx="0" cy="-2" rx="24" ry="9" fill="#0a3f58" opacity=".18"/>')+objDraw(o,p[0],p[1])+
+      (o.lv>1&&!c.happy?'<g transform="translate(20 -8)"><circle r="8" fill="#ffd166" stroke="#10303c" stroke-width="2"/><text y="4" text-anchor="middle" class="bn" style="font-size:11px">'+o.lv+'</text></g>':'')+
+      (!works(k)?'<g transform="translate(-20 -40)"><circle r="9" fill="#d6453d" stroke="#fff" stroke-width="2"/><text y="4.5" text-anchor="middle" class="bn" style="fill:#fff;font-size:13px">!</text></g>':'')+
+      bubble(o)+'</g>';
+    items.push({d:p[0]+p[1]+(flat?-.5:0),s:body});
+  });
+  items.sort(function(a,b){return a.d-b.d;});
+  $('#objs').innerHTML=items.map(function(x){return x.s;}).join('');
+  justPlaced=null;
+}
+function canPlace(t,i,j){
+  var c=CAT[t],tl=tile(i,j),k=key(i,j);
+  if(!tl||tl.t==='water') return 'Buraya inşa edilmez.';
+  if(!zoneOpen(tl.z)) return 'Bu bölge henüz kilitli.';
+  if(state.obj[k]) return 'Burası dolu.';
+  if(state.nat[k]) return 'Önce bu '+(state.nat[k]==='rock'?'kayaya':'ağaca')+' dokunup topla.';
+  if(tl.t==='sand'&&!c.sand) return 'Kumsala sadece yol ve süs konur.';
+  return '';
+}
+function renderOverlay(){
   var out='';
-  for(var i=0;i<26;i++){
-    var x=(i*149)%760+20, y=(i*97)%490+16;
-    var dx=(x-400)/346, dy=(y-300)/228;
-    if(dx*dx+dy*dy<1) continue;
-    out+='<path class="wv" style="animation-delay:'+(-(i%7)*0.6).toFixed(1)+'s" d="M'+x+' '+y+' q10 -7 20 0 t20 0 t20 0" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.6" stroke-linecap="round"/>';
+  if(mode){
+    for(var i=0;i<N;i++)for(var j=0;j<N;j++){
+      var tl=TILES[i][j];if(tl.t==='water'||!zoneOpen(tl.z))continue;
+      var ok=!canPlace(mode,i,j),s=iso(i,j);
+      if(ok) out+='<polygon points="'+diamond(s.x,s.y)+'" fill="'+(CAT[mode].road||CAT[mode].happy||hasRoad(i,j)?'#fff':'#ffd166')+'" opacity=".32" pointer-events="none"/>';
+    }
   }
-  $('#waves').innerHTML=out;
+  if(sel&&state.obj[sel]){var p=unkey(sel),s2=iso(p[0],p[1]);out+='<polygon points="'+diamond(s2.x,s2.y)+'" fill="none" stroke="#ff6a4d" stroke-width="3" pointer-events="none" class="pulse"/>';}
+  $('#over').innerHTML=out;
 }
-function scatter(seed,n,fn){var out='',x=seed;for(var i=0;i<n;i++){x=(x*9301+49297)%233280;var a=x/233280;x=(x*9301+49297)%233280;var b=x/233280;out+=fn(a,b,i);}return out;}
-function onLand(x,y){return Math.pow((x-400)/280,2)+Math.pow((y-292)/170,2)<1;}
-function nearPlot(x,y){return PLOTS.some(function(q){return Math.abs(x-q[0])<70&&y>q[1]-100&&y<q[1]+52;});}
-function groundSVG(r){
-  var g='<ellipse cx="400" cy="306" rx="372" ry="250" fill="url(#shallow)"/>'+
-    '<ellipse cx="400" cy="300" rx="328" ry="212" fill="url(#sandG)"/>'+
-    '<ellipse cx="400" cy="300" rx="328" ry="212" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-dasharray="26 18" class="wv"/>'+
-    '<ellipse cx="400" cy="292" rx="300" ry="190" fill="url(#'+({koy:'grassKoy',kasaba:'grassKasaba',ilce:'grassIlce'})[r]+')"/>'+
-    '<ellipse cx="370" cy="250" rx="210" ry="100" fill="#fff" opacity=".08"/>';
-  // kıyıda taşlar ve palmiyeler
-  g+='<g stroke="#10303c" stroke-width="2" stroke-linejoin="round">'+
-     '<path d="M96 330 l10 -12 14 2 6 12 -10 8 -16 -2z" fill="#a3b0ba"/><path d="M690 378 l8 -10 12 1 5 10 -8 6 -13 -1z" fill="#a3b0ba"/><path d="M640 158 l7 -8 10 1 4 8 -7 5 -11 -1z" fill="#a3b0ba"/></g>';
-  [[118,268],[686,300],[160,420]].forEach(function(p,i){
-    g+='<g transform="translate('+p[0]+' '+p[1]+')"><g class="sway" style="animation-delay:-'+i+'s">'+OL+'<path d="M0 0 Q4 -20 2 -42" fill="none" stroke="#8a5a33" stroke-width="6"/><path d="M2 -42 q-20 -6 -30 6 q16 -2 30 -6z M2 -42 q20 -8 30 4 q-16 -2 -30 -4z M2 -42 q-8 -16 -24 -18 q10 8 24 18z M2 -42 q8 -18 24 -16 q-12 6 -24 16z" fill="#3f9b4a" stroke-width="2"/></g></g></g>';
-  });
-  if(r==='koy'){
-    g+='<path d="M180 300 Q290 280 400 300 T620 300" fill="none" stroke="#d9c48f" stroke-width="12" stroke-linecap="round" opacity=".7"/>';
-  }
-  if(r==='kasaba'||r==='ilce'){
-    var road=r==='ilce'?'#cfc8ba':'#e6d6ad';
-    g+='<g fill="none" stroke="'+road+'" stroke-width="16" stroke-linecap="round"><path d="M325 140 V455 M475 140 V455 M250 455 H550 M228 140 H572"/></g>'+
-       '<g fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2" stroke-dasharray="8 8"><path d="M325 150 V445 M475 150 V445"/></g>';
-  }
-  if(r==='ilce'){
-    g+='<circle cx="400" cy="300" r="50" fill="#e6d6ad" stroke="#10303c" stroke-width="2.5"/>'+
-       '<circle cx="400" cy="300" r="30" fill="#7fd3e6" stroke="#10303c" stroke-width="2.5"/>'+
-       '<circle cx="400" cy="300" r="10" fill="#fff" class="glow"/>'+
-       '<path d="M400 300 q-8 -24 0 -34 q8 10 0 34" fill="#bfeefa" class="glow"/>';
-  }
-  // çimen tutamları ve çalılar
-  g+=scatter(r.length*77+13,46,function(a,b){
-    var x=110+a*580,y=130+b*330;
-    if(!onLand(x,y)||nearPlot(x,y)) return '';
-    if((r==='kasaba'||r==='ilce')&&(Math.abs(x-325)<16||Math.abs(x-475)<16)) return '';
-    if(r==='ilce'&&Math.hypot(x-400,y-300)<60) return '';
-    return a>.82?'<g transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"><circle r="9" fill="#3f8f45" stroke="#10303c" stroke-width="2"/><circle cx="-3" cy="-3" r="3" fill="#ff8fb3"/></g>'
-      :'<path d="M'+x.toFixed(0)+' '+y.toFixed(0)+' l-3 -8 m3 8 l1 -10 m-1 10 l5 -7" stroke="#2f7f3a" stroke-width="2" stroke-linecap="round" opacity=".7"/>';
-  });
-  return g;
-}
-function skySVG(){
-  var c='<path d="M0 0 c6 -14 26 -16 32 -4 c10 -8 28 -2 26 12 c8 2 8 14 -2 14 h-60 c-12 0 -12 -16 4 -22z" fill="#fff" opacity=".85"/>';
-  return '<g class="cloud" style="animation-delay:-6s"><g transform="translate(0 60)">'+c+'</g></g>'+
-    '<g class="cloud" style="animation-delay:-24s;animation-duration:52s"><g transform="translate(0 110) scale(.7)">'+c+'</g></g>'+
-    '<g class="fly"><g transform="translate(0 90)" fill="none" stroke="#10303c" stroke-width="2" stroke-linecap="round"><path d="M0 0 q5 -5 10 0 q5 -5 10 0"/><path d="M18 -14 q4 -4 8 0 q4 -4 8 0"/></g></g>'+
-    '<g transform="translate(700 470)"><g class="bob">'+DECOR.kayik.draw+'</g></g>';
-}
-function lockSVG(R){
-  var need=rById(R.need),n=inRegion(R.need).filter(function(b){return state.built.indexOf(b.id)>=0;}).length,t=inRegion(R.need).length;
-  return '<rect width="800" height="520" fill="#0a3f58" opacity=".55"/>'+
-    '<g transform="translate(400 250)"><circle r="62" fill="#fff" opacity=".18"/>'+OL+'<path d="M-20 -6 V-24 a20 20 0 0 1 40 0 V-6" fill="none" stroke="#fff" stroke-width="9"/><rect x="-30" y="-8" width="60" height="46" rx="10" fill="#ffd166"/><circle cx="0" cy="12" r="6" fill="#10303c"/></g></g>'+
-    '<text x="400" y="360" text-anchor="middle" class="lbl" style="font-size:30px">'+R.name+' kilitli</text>'+
-    '<text x="400" y="390" text-anchor="middle" class="lbl2" style="font-size:16px">'+need.name+' binaları: '+n+' / '+t+' · Açmak için '+costText(R.cost)+'</text>';
-}
-function renderIsland(){
-  var items=[],view=state.view,R=rById(view);
-  $('#ground').innerHTML=groundSVG(view);
-  if(!isOpen(view)){$('#dyn').innerHTML=lockSVG(R);return;}
-  inRegion(view).forEach(function(b){
-    var x=PLOTS[b.slot][0], y=PLOTS[b.slot][1];
-    var built=state.built.indexOf(b.id)>=0;
-    var ready=!built&&canPay(b.cost);
-    var label=built?b.name+', oynamak için dokun':b.name+', inşa etmek için '+costText(b.cost);
-    var body=built
-      ? '<ellipse cx="0" cy="2" rx="54" ry="10" fill="#0a3f58" opacity=".22"/><g class="bld'+(b.id===justBuilt?' pop':'')+'">'+b.draw+'</g>'+(b.id===justBuilt?'<g pointer-events="none"><circle cx="-40" cy="-60" r="10" fill="#ffd166" class="spark"/><circle cx="42" cy="-70" r="8" fill="#fff" class="spark" style="animation-delay:.15s"/><circle cx="0" cy="-100" r="9" fill="#ff8fb3" class="spark" style="animation-delay:.3s"/></g>':'')
-      : '<ellipse class="padd" cx="0" cy="-4" rx="50" ry="19" fill="#fff" fill-opacity=".35" stroke="#fff" stroke-width="3" stroke-dasharray="7 6"/><text x="0" y="3" text-anchor="middle" font-size="26" font-weight="800" fill="#10303c" font-family="Baloo 2, sans-serif">+</text>';
-    var sub=built?'oyna':costText(b.cost);
-    items.push({y:y,svg:'<g class="plot'+(built?' built':' empty')+(ready?' ready':'')+'" data-plot="'+b.id+'" tabindex="0" role="button" aria-label="'+label+'" transform="translate('+x+' '+y+')">'+body+
-      '<text class="lbl" y="25" text-anchor="middle">'+b.name+'</text><text class="lbl2" y="41" text-anchor="middle">'+sub+'</text></g>'});
-  });
-  state.decor.forEach(function(d){
-    if(d.r!==view) return;
-    items.push({y:d.y,svg:'<g pointer-events="none" transform="translate('+d.x+' '+d.y+')">'+DECOR[d.id].draw+'</g>'});
-  });
-  items.sort(function(a,b){return a.y-b.y;});
-  $('#dyn').innerHTML=items.map(function(i){return i.svg;}).join('');
-  justBuilt=null;
-}
-function svgPoint(e){
-  var svg=$('#island'),pt=svg.createSVGPoint();
-  pt.x=e.clientX;pt.y=e.clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
-function placeDecor(p){
-  var d=DECOR[selDecor];
-  var land=Math.pow((p.x-400)/292,2)+Math.pow((p.y-292)/182,2)<1;
-  var sea=Math.pow((p.x-400)/336,2)+Math.pow((p.y-300)/222,2)>1 && p.x>30 && p.x<770 && p.y>50 && p.y<500;
-  if(d.water&&!sea){toast('Kayığı denize koy.');return;}
-  if(!d.water&&!land){toast('Bunu adanın yeşil kısmına koy.');return;}
-  var blocked=inRegion(state.view).some(function(b){var q=PLOTS[b.slot];return Math.abs(p.x-q[0])<64&&p.y>q[1]-92&&p.y<q[1]+50;});
-  if(state.view==='ilce'&&Math.hypot(p.x-400,p.y-300)<56) blocked=true;
-  if(blocked){toast('Binaların üstüne süs konmaz.');return;}
-  if(state.decor.length>=60){toast('Ada doldu. Önce bir süsü geri al.');return;}
-  if(!canPay(d.cost)){toast('Kaynağın yetmiyor: '+costText(d.cost)+'.');selDecor=null;refresh();return;}
-  pay(d.cost,-1);
-  state.decor.push({id:selDecor,x:Math.round(p.x),y:Math.round(p.y),r:state.view});
-  good();
-  if(!canPay(d.cost)) selDecor=null;
-  save();refresh();
-}
-function undoDecor(){
-  var i=-1;state.decor.forEach(function(x,k){if(x.r===state.view)i=k;});
-  if(i<0) return;
-  var d=state.decor.splice(i,1)[0];
-  pay(DECOR[d.id].cost,1);
-  save();refresh();
+function fx(i,j,text){
+  var s=iso(i,j),g=document.createElementNS('http://www.w3.org/2000/svg','text');
+  g.setAttribute('x',s.x);g.setAttribute('y',s.y-40);g.setAttribute('text-anchor','middle');g.setAttribute('class','fx');g.textContent=text;
+  $('#fx').appendChild(g);setTimeout(function(){g.remove();},1200);
 }
 
-/* ---------- panel ---------- */
-function score(){return state.built.length*10+(state.regions.length-1)*20+state.decor.length*2;}
+/* --- yürüyen köylüler --- */
+var walkers=[],lastFrame=0;
+var SHIRTS=['#e4572e','#3b6ea5','#f2b134','#7b5ea7','#2e9e5b','#ff8fb3'];
+function roadList(){return Object.keys(state.obj).filter(function(k){return state.obj[k].t==='yol';});}
+function syncWalkers(){
+  var roads=roadList(),want=roads.length<2?0:Math.min(14,Math.ceil(stats().pop/4));
+  while(walkers.length>want){walkers.pop().el.remove();}
+  while(walkers.length<want){
+    var k=roads[rnd(0,roads.length-1)],el=document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.innerHTML='<ellipse cx="0" cy="0" rx="4" ry="1.8" fill="#0a3f58" opacity=".25"/><rect x="-3" y="-10" width="6" height="8" rx="2.5" fill="'+SHIRTS[walkers.length%SHIRTS.length]+'" stroke="#10303c" stroke-width="1.2"/><circle cx="0" cy="-13" r="3.2" fill="#f3c9a1" stroke="#10303c" stroke-width="1.2"/>';
+    $('#walk').appendChild(el);walkers.push({el:el,from:k,to:k,t:1,sp:.5+Math.random()*.4});
+  }
+}
+function stepWalkers(ts){
+  var dt=Math.min(.05,(ts-lastFrame)/1000||0);lastFrame=ts;
+  walkers.forEach(function(w){
+    w.t+=dt*w.sp;
+    if(w.t>=1){
+      w.from=w.to;var p=unkey(w.from);
+      var nb=[[1,0],[-1,0],[0,1],[0,-1]].map(function(d){return key(p[0]+d[0],p[1]+d[1]);}).filter(function(k){var o=state.obj[k];return o&&o.t==='yol';});
+      if(!state.obj[w.from]||state.obj[w.from].t!=='yol'){var r=roadList();if(r.length)w.from=r[rnd(0,r.length-1)];nb=[];}
+      w.to=nb.length?nb[rnd(0,nb.length-1)]:w.from;w.t=0;
+    }
+    var a=unkey(w.from),b=unkey(w.to),A=iso(a[0],a[1]),B=iso(b[0],b[1]);
+    var x=A.x+(B.x-A.x)*w.t+(w.sp-.7)*14,y=A.y+(B.y-A.y)*w.t+(w.sp-.7)*6;
+    w.el.setAttribute('transform','translate('+x.toFixed(1)+' '+y.toFixed(1)+')');
+  });
+  requestAnimationFrame(stepWalkers);
+}
+
+/* --- panel --- */
 function renderRes(bump){
   $('#res').innerHTML=RKEYS.map(function(k){
-    return '<span class="chip'+(bump&&bump[k]?' bump':'')+'" title="'+RES[k].name+'">'+RES[k].svg+'<span class="sr">'+RES[k].name+'</span> '+state.res[k]+'</span>';
+    return '<span class="chip'+(bump&&bump[k]?' bump':'')+'" title="'+RES[k].name+'">'+RES[k].svg+'<span class="sr">'+RES[k].name+'</span> '+Math.floor(state.res[k])+'</span>';
   }).join('');
 }
-function renderLevel(){
-  var s=score(),li=0;
-  LEVELS.forEach(function(l,i){if(s>=l[0]) li=i;});
-  var next=LEVELS[li+1];
-  var pct=next?Math.round((s-LEVELS[li][0])/(next[0]-LEVELS[li][0])*100):100;
-  $('#levelCard').innerHTML='<div class="lv"><strong>'+LEVELS[li][1]+'</strong><span>'+s+' puan</span></div>'+
+function meter(v,col){return '<div class="meter sm"><i style="width:'+Math.max(0,Math.min(100,v))+'%;background:'+col+'"></i></div>';}
+function renderCity(){
+  var m=stats(),next=TITLES.filter(function(t){return t[0]>m.pop;})[0];
+  var pct=next?Math.round(m.pop/next[0]*100):100;
+  $('#city').innerHTML='<div class="lv"><strong>'+titleOf(m.pop)+'</strong><span>'+m.pop+' nüfus</span></div>'+
     '<div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pct+'"><i style="width:'+pct+'%"></i></div>'+
-    '<p class="note">'+(next?'Sonraki seviye: '+next[1]+' ('+next[0]+' puan). Bina 10, yeni bölge 20, süs 2 puan.':'En üst seviyedesin.')+'</p>';
+    '<p class="note">'+(next?'Sonraki unvan: '+next[1]+' ('+next[0]+' nüfus)':'En yüksek unvana ulaştın!')+'</p>'+
+    '<div class="kpis"><div><span>Mutluluk</span><b>%'+m.happy+'</b>'+meter(m.happy,m.happy>=70?'#2e9e5b':m.happy>=45?'#f2b134':'#d6453d')+'</div>'+
+    '<div><span>İşçiler</span><b>'+Math.min(m.pop,m.work)+' / '+m.work+'</b>'+meter(m.workRatio*100,m.workRatio>=1?'#2e9e5b':'#f2b134')+'</div>'+
+    '<div><span>Üretim hızı</span><b>%'+Math.round(m.speed*100)+'</b>'+meter(m.speed*66,'#1a86a3')+'</div></div>'+
+    (m.cut?'<p class="warn">'+m.cut+' bina yola bağlı değil, çalışmıyor. Yanlarına yol yap.</p>':'')+
+    (m.workRatio<1?'<p class="warn">İşçi yetmiyor. Daha fazla ev kur.</p>':'')+
+    (m.happy<45?'<p class="warn">Halk mutsuz. Süs ve bilgi binası ekle.</p>':'');
 }
-function renderTabs(){
-  $('#tabs').innerHTML=REGIONS.map(function(r){
-    var open=isOpen(r.id),on=state.view===r.id,list=inRegion(r.id),n=list.filter(function(b){return state.built.indexOf(b.id)>=0;}).length;
-    var sub=open?n+' / '+list.length+' bina':(canUnlock(r.id)?'açılabilir!':'kilitli');
-    return '<button type="button" class="tab'+(on?' on':'')+(open?'':' locked')+(canUnlock(r.id)?' ready':'')+'" data-tab="'+r.id+'" aria-pressed="'+on+'">'+r.name+'<small>'+sub+'</small></button>';
-  }).join('');
+function renderQuests(){
+  var qs=questState();
+  $('#quests').innerHTML=qs.length?qs.map(function(x){
+    return '<li class="qrow'+(x.ok?' ok':'')+'"><div class="qt">'+x.q.t+'<div class="meter sm"><i style="width:'+Math.round(x.cur/x.max*100)+'%"></i></div><span class="sub">'+x.cur+' / '+x.max+' · Ödül: '+chipsPlain(x.q.rw)+'</span></div>'+
+      (x.ok?'<button type="button" class="btn play" data-claim="'+x.i+'">Al</button>':'')+'</li>';
+  }).join(''):'<li class="qrow"><div class="qt">Bütün görevleri bitirdin. Harikasın!</div></li>';
 }
-function renderBuildings(){
-  var R=rById(state.view);
-  $('#bTitle').textContent='Binalar · '+R.name;
-  if(!isOpen(R.id)){
-    var need=rById(R.need),left=inRegion(R.need).filter(function(b){return state.built.indexOf(b.id)<0;});
-    $('#blist').innerHTML='<li class="row lockrow"><div class="rt"><strong>'+R.name+' kilitli</strong><span class="sub">'+
-      (left.length?'Önce '+need.name+' bölgesinde şunları kur: '+left.map(function(b){return b.name;}).join(', ')+'.':need.name+' tamam! Kaynakları toplayıp bölgeyi açabilirsin.')+
-      '</span></div><button type="button" class="btn" data-act="unlock" data-id="'+R.id+'"'+(canUnlock(R.id)?'':' disabled')+'>Bölgeyi aç</button><div class="cost">'+chips(R.cost,true)+'</div></li>'+
-      inRegion(R.id).map(function(b){return '<li class="row"><div class="rt"><strong>'+b.name+'</strong><span class="sub">'+b.skill+' · yakında</span></div></li>';}).join('');
-    return;
-  }
-  $('#blist').innerHTML=inRegion(R.id).map(function(b){
-    var built=state.built.indexOf(b.id)>=0;
-    var sub=b.skill+' · kazanç: '+RES[b.res].name.toLowerCase();
-    if(built) return '<li class="row"><div class="rt"><strong>'+b.name+'</strong><span class="sub">'+sub+'</span></div><button type="button" class="btn play" data-act="play" data-id="'+b.id+'">Oyna</button></li>';
-    return '<li class="row"><div class="rt"><strong>'+b.name+'</strong><span class="sub">'+b.skill+'</span></div><button type="button" class="btn" data-act="build" data-id="'+b.id+'"'+(canPay(b.cost)?'':' disabled')+'>İnşa et</button><div class="cost">'+chips(b.cost,true)+'</div></li>';
-  }).join('');
+function chipsPlain(cost){return Object.keys(cost).map(function(k){return '<span class="chip sm">'+RES[k].svg+cost[k]+'</span>';}).join(' ');}
+function zoneNeedText(z){
+  var m=stats(),n=z.need;
+  return 'Nüfus '+m.pop+'/'+n.pop+' · Bilgi yıldızı '+Math.floor(state.res.yildiz)+'/'+n.yildiz;
 }
-function renderDecor(){
-  $('#decs').innerHTML=DKEYS.map(function(k){
-    var d=DECOR[k],on=selDecor===k;
-    return '<button type="button" class="dec'+(on?' on':'')+'" data-dec="'+k+'" aria-pressed="'+on+'"'+(canPay(d.cost)||on?'':' disabled')+'>'+
-      '<svg viewBox="-28 -62 56 80" width="44" height="58" aria-hidden="true">'+d.draw+'</svg><span>'+d.name+'</span><span class="cost">'+chips(d.cost,true)+'</span></button>';
+function canOpenZone(z){var m=stats();return !zoneOpen(z.id)&&m.pop>=z.need.pop&&state.res.yildiz>=z.need.yildiz&&canPay(z.cost)&&zoneOpen(ZONES[zIndex(z.id)-1].id);}
+function openZone(id){
+  var z=zById(id);
+  if(!canOpenZone(z)){toast(z.name+' için: '+zoneNeedText(z)+' ve '+costText(z.cost)+'.');return;}
+  pay(z.cost,-1);state.zones.push(id);good();setTimeout(function(){beep(1046,.2);},260);
+  save();renderTiles();refresh();toast(z.name+' açıldı! Haritada yeni topraklar var.');
+}
+function upgradeCost(o){var c=CAT[o.t],out={};Object.keys(c.cost).forEach(function(k){if(k!=='yildiz')out[k]=Math.max(2,c.cost[k])*(o.lv+1);});if(!Object.keys(out).length)out={odun:4*(o.lv+1),tas:4*(o.lv+1)};out.yildiz=4*o.lv;return out;}
+function canUpgrade(o){var c=CAT[o.t];return o.lv<3&&!c.road&&!c.happy&&o.t!=='apartman';}
+function renderSel(){
+  var box=$('#selbox');
+  if(!sel||!state.obj[sel]){box.hidden=true;return;}
+  var o=state.obj[sel],c=CAT[o.t],ok=works(sel),html='<div class="selh"><div><div class="dk">'+(c.know?c.know.skill:GROUPS.filter(function(g){return g[0]===c.grp;})[0][1])+'</div><h2>'+c.name+(canUpgrade(o)||o.lv>1?' <small>Sv. '+o.lv+'</small>':'')+'</h2></div><button type="button" class="x" data-unsel aria-label="Kapat">×</button></div>';
+  if(!ok) html+='<p class="warn">Yola bağlı değil. Yanındaki bir kareye yol yap.</p>';
+  if(c.pop) html+='<p class="note">'+c.pop*o.lv+' kişi yaşıyor.</p>';
+  if(c.make) html+='<p class="note">Depo: '+Math.floor(o.st||0)+' / '+capOf(o)+' '+RES[c.make].name.toLowerCase()+'. Yaklaşık '+Math.round(60*RATE*o.lv*stats().speed*10)/10+' / dakika.</p>';
+  if(c.know) html+='<p class="note">Bir turda en fazla '+4*o.lv+' '+RES[c.know.res].name.toLowerCase()+' ve 4 bilgi yıldızı kazanırsın.</p>';
+  if(c.happy) html+='<p class="note">Mutluluğa +'+c.happy+' katkı.</p>';
+  html+='<div class="selb">';
+  if(c.know) html+='<button type="button" class="btn play" data-do="play"'+(ok?'':' disabled')+'>Oyna</button>';
+  if(c.make) html+='<button type="button" class="btn play" data-do="collect"'+(o.st>=1?'':' disabled')+'>Topla</button>';
+  if(canUpgrade(o)){var uc=upgradeCost(o);html+='<button type="button" class="btn" data-do="up"'+(canPay(uc)?'':' disabled')+'>Yükselt</button><div class="cost">'+chips(uc,true)+'</div>';}
+  if(o.t!=='kutuphane') html+='<button type="button" class="btn alt" data-do="del">Kaldır</button>';
+  html+='</div>';
+  box.innerHTML=html;box.hidden=false;
+}
+function lockReason(t){
+  var c=CAT[t];
+  if(c.zone&&!zoneOpen(c.zone)) return zById(c.zone).name+' açılınca';
+  if(c.unique&&state&&Object.keys(state.obj).some(function(k){return state.obj[k].t===t;})) return 'kuruldu';
+  return '';
+}
+function renderShop(){
+  $('#gtabs').innerHTML=GROUPS.map(function(g){return '<button type="button" class="gtab'+(grp===g[0]?' on':'')+'" data-grp="'+g[0]+'">'+g[1]+'</button>';}).join('');
+  $('#shop').innerHTML=Object.keys(CAT).filter(function(t){return CAT[t].grp===grp;}).map(function(t){
+    var c=CAT[t],lr=lockReason(t),dis=!!lr||!canPay(c.cost);
+    var icon=t==='yol'?'<polygon points="0,-20 32,-4 0,12 -32,-4" fill="#d8ccb2" stroke="#10303c" stroke-width="2"/><path d="M-14 -11 L14 3" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>':objDraw({t:t,lv:1},0,0);
+    return '<button type="button" class="dec'+(mode===t?' on':'')+'" data-build="'+t+'"'+(dis&&mode!==t?' disabled':'')+' title="'+(c.desc||c.name)+'">'+
+      '<svg viewBox="-40 -76 80 92" width="54" height="62" aria-hidden="true">'+icon+'</svg><span>'+c.name+'</span>'+
+      (lr?'<span class="lk">'+lr+'</span>':'<span class="cost">'+chips(c.cost,true)+'</span>')+'</button>';
   }).join('');
-  $('#undo').disabled=!state.decor.length;
-  $('#island').classList.toggle('placing',!!selDecor);
+  var zl=ZONES.filter(function(z){return !zoneOpen(z.id);})[0];
+  $('#zonebox').innerHTML=zl?'<div class="zrow"><div><strong>'+zl.name+' bölgesini aç</strong><span class="sub">'+zoneNeedText(zl)+'</span><div class="cost">'+chips(zl.cost,true)+'</div></div><button type="button" class="btn" data-zone="'+zl.id+'"'+(canOpenZone(zl)?'':' disabled')+'>Aç</button></div>':'<p class="note">Bütün bölgeler açık. Adanın tamamı senin!</p>';
 }
 function hint(){
-  var R=rById(state.view);
-  if(!isOpen(R.id)) return canUnlock(R.id)?R.name+' açılmaya hazır! Sağdaki panelden "Bölgeyi aç"a dokun.':R.name+' kilitli. '+rById(R.need).name+' bölgesini tamamla ve '+costText(R.cost)+' topla.';
-  if(selDecor) return DECOR[selDecor].name+' seçili. '+(DECOR[selDecor].water?'Denizde bir yere':'Adada boş bir yere')+' dokun. Vazgeçmek için süse yeniden dokun.';
-  if(state.played===0) return 'Kütüphane\'ye dokun ve ilk bulmacanı çöz.';
-  var next=inRegion(R.id).filter(function(b){return state.built.indexOf(b.id)<0;})[0];
-  if(next) return canPay(next.cost)?next.name+' için kaynağın yeterli. Boş arsaya dokunup inşa et.':next.name+' için '+costText(next.cost)+' gerekiyor. Bulmaca çözerek topla.';
-  var nr=REGIONS.filter(function(x){return x.need===R.id;})[0];
-  if(nr&&!isOpen(nr.id)) return canUnlock(nr.id)?R.name+' tamam! Yukarıdan '+nr.name+' sekmesine geç ve bölgeyi aç.':R.name+' tamam! '+nr.name+' için '+costText(nr.cost)+' topla.';
-  return R.name+' bölgesindeki tüm binalar hazır. Süsleyebilir ya da diğer bölgelerde oynayabilirsin.';
+  if(mode) return CAT[mode].name+' yerleştiriyorsun. Açık renkli karelerden birine dokun. Sarı kareler yola bitişik değil.';
+  var m=stats();
+  if(state.played===0) return 'Kütüphaneye dokun ve ilk bulmacanı çöz. Ağaçlara ve kayalara dokunarak da kaynak toplayabilirsin.';
+  if(m.cut) return 'Bazı binalar yola bağlı değil. Yanlarına yol yap.';
+  if(m.workRatio<1) return 'Üretim binaları işçi bekliyor. Ev kurarak nüfusu artır.';
+  if(m.happy<45) return 'Halk mutsuz. Süsler ve bilgi binaları mutluluğu artırır.';
+  return 'Haritayı sürükleyerek gezebilir, iki parmakla ya da tekerlekle yakınlaşabilirsin.';
 }
-function refresh(bump){renderWho();renderTabs();renderRes(bump);renderLevel();renderBuildings();renderDecor();renderIsland();$('#status').textContent=hint();
-  var m=$('#mute');m.textContent=state.mute?'Ses kapalı':'Ses açık';m.setAttribute('aria-pressed',String(state.mute));}
+function refresh(bump){
+  renderWho();renderRes(bump);renderCity();renderQuests();renderShop();renderSel();renderObjects();renderOverlay();
+  $('#status').textContent=hint();$('#modebar').hidden=!mode;if(mode)$('#modetxt').textContent=CAT[mode].name+' yerleştiriyorsun';
+  var mb=$('#mute');mb.textContent=state.mute?'Ses kapalı':'Ses açık';mb.setAttribute('aria-pressed',String(state.mute));
+  syncWalkers();
+}
 
-function openBuilding(id){
-  var b=bById(id);
-  if(!b||!isOpen(b.region)) return;
-  if(state.built.indexOf(id)>=0){startRound(b);return;}
-  if(!canPay(b.cost)){toast(b.name+' için '+costText(b.cost)+' gerekiyor.');return;}
-  pay(b.cost,-1);state.built.push(id);justBuilt=id;
-  good();save();refresh();toast(b.name+' inşa edildi!');
+/* --- eylemler --- */
+function tapTile(k){
+  var p=unkey(k),i=p[0],j=p[1];
+  if(mode){
+    var why=canPlace(mode,i,j);
+    if(why){toast(why);bad();return;}
+    var c=CAT[mode];
+    if(!canPay(c.cost)){toast('Kaynak yetmiyor: '+costText(c.cost)+'.');mode=null;refresh();return;}
+    pay(c.cost,-1);state.obj[k]={t:mode,lv:1,st:0};justPlaced=k;beep(c.road?620:700,.08);if(!c.road)setTimeout(function(){beep(900,.1);},90);
+    if(c.unique||!canPay(c.cost)){mode=null;if(!c.road)sel=k;}
+    if(!c.road&&!c.happy&&!hasRoad(i,j)) toast(c.name+' kuruldu. Çalışması için yanına yol yap.');
+    save();refresh();return;
+  }
+  if(state.nat[k]){
+    var n=state.nat[k];if(!zoneOpen(TILES[i][j].z)){toast('Bu '+(n==='rock'?'kaya':'ağaç')+' '+zById(TILES[i][j].z).name+' bölgesinde. Önce o bölgeyi aç.');return;}
+    delete state.nat[k];state.cleared++;
+    var r=n==='rock'?'tas':'odun',g=n==='rock'?2:3;state.res[r]+=g;var bm={};bm[r]=1;
+    fx(i,j,'+'+g+' '+RES[r].name.toLowerCase());good();save();refresh(bm);return;
+  }
+  var o=state.obj[k];
+  if(!o||CAT[o.t].road){sel=null;refresh();return;}
+  if(CAT[o.t].make&&o.st>=1){collect(k);}
+  sel=k;refresh();
+}
+function collect(k){
+  var o=state.obj[k],c=CAT[o.t],n=Math.floor(o.st||0);if(n<1)return;
+  o.st-=n;state.res[c.make]+=n;var p=unkey(k),bm={};bm[c.make]=1;fx(p[0],p[1],'+'+n+' '+RES[c.make].name.toLowerCase());good();save();refresh(bm);
+}
+function doSel(act){
+  var o=state.obj[sel];if(!o)return;var c=CAT[o.t];
+  if(act==='play'){if(!works(sel)){toast('Önce yola bağla.');return;}round=null;startRound(c.know,o.lv);return;}
+  if(act==='collect'){collect(sel);return;}
+  if(act==='up'){var uc=upgradeCost(o);if(!canPay(uc)){toast('Gerekenler: '+costText(uc)+'.');return;}pay(uc,-1);o.lv++;justPlaced=sel;good();save();refresh();toast(c.name+' '+o.lv+'. seviyeye çıktı!');return;}
+  if(act==='del'){
+    var back={};Object.keys(c.cost).forEach(function(k){var v=Math.floor(c.cost[k]/2);if(v)back[k]=v;});
+    delete state.obj[sel];pay(back,1);sel=null;save();refresh();toast(c.name+' kaldırıldı.'+(Object.keys(back).length?' Geri gelen: '+costText(back)+'.':''));
+  }
+}
+function centerCam(){cam.x=0;cam.y=Math.round(C)*TH;cam.z=view.w<600?.85:1.15;applyCam();}
+function renderBoats(){
+  var spots=[[-560,300,1],[520,520,-1],[-200,690,1]];
+  $('#boats').innerHTML=spots.map(function(b,i){return '<g transform="translate('+b[0]+' '+b[1]+') scale('+b[2]+' 1)"><g class="bob" style="animation-delay:-'+i+'s">'+DECOR.kayik.draw+'</g></g>';}).join('');
 }
 
 /* ---------- soru üreticiler ---------- */
@@ -933,8 +1227,8 @@ function head(b){
     '<div class="dots" aria-label="Soru '+(round.i+1)+' / '+round.qs.length+'">'+round.qs.map(function(_,i){
       return '<span class="dot'+(i<round.i?(round.res[i]?' ok':' no'):(i===round.i?' cur':''))+'"></span>';}).join('')+'</div>';
 }
-function startRound(b){
-  round={b:b,qs:makeQs(b),i:0,res:[],locked:false};
+function startRound(b,lv){
+  round={b:b,lv:lv||1,qs:makeQs(b),i:0,res:[],locked:false};
   renderQ();openModal();
 }
 function renderQ(){
@@ -1064,51 +1358,81 @@ function anaSkip(){
 function nextQ(){
   if(round.i<round.qs.length-1){round.i++;renderQ();return;}
   var right=round.res.filter(Boolean).length,perfect=right===round.qs.length;
-  var gain=right+(perfect?1:0),k=round.b.res,bump={};
-  state.res[k]+=gain;state.played++;bump[k]=1;save();
+  var gain=(right+(perfect?1:0))*round.lv,k=round.b.res,bump={},stars=right+(perfect?1:0);
+  state.res[k]+=gain;state.res.yildiz+=stars;state.played++;if(perfect)state.perfect++;bump[k]=1;bump.yildiz=1;save();
   $('#dlgBody').innerHTML=head(round.b).replace(/<div class="dots".*?<\/div>/,'')+
     '<div class="sum"><div class="big">'+right+' / '+round.qs.length+'</div>'+
     '<p><strong>'+(perfect?'Kusursuz tur! Bir bonus kazandın.':right>0?'Güzel gidiyorsun.':'Bu sefer olmadı, yeni tur seni bekliyor.')+'</strong></p>'+
-    '<div class="gains"><span class="chip">'+RES[k].svg+'+'+gain+' '+RES[k].name.toLowerCase()+'</span></div></div>'+
-    '<div class="foot"><button type="button" class="btn alt" data-close>Adaya dön</button><button type="button" class="btn" data-again>Tekrar oyna</button></div>';
+    '<div class="gains"><span class="chip">'+RES[k].svg+'+'+gain+' '+RES[k].name.toLowerCase()+'</span>'+(stars?'<span class="chip">'+RES.yildiz.svg+'+'+stars+' yıldız</span>':'')+'</div>'+(round.lv>1?'<p class="note">'+round.lv+'. seviye bina: kazanç '+round.lv+' kat.</p>':'')+'</div>'+
+    '<div class="foot"><button type="button" class="btn alt" data-close>Şehre dön</button><button type="button" class="btn" data-again>Tekrar oyna</button></div>';
   renderRes(bump);
 }
 
-/* ---------- olaylar ---------- */
-$('#island').addEventListener('click',function(e){
-  if(selDecor){placeDecor(svgPoint(e));return;}
-  var p=e.target.closest('[data-plot]');
-  if(p) openBuilding(p.getAttribute('data-plot'));
+/* ---------- harita etkileşimi: sürükle, yakınlaş, dokun ---------- */
+(function(){
+  var svg=$('#map'),pts={},downT=null,moved=false,start=null,pinch=null;
+  function dist(){var a=Object.keys(pts).map(function(k){return pts[k];});return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);}
+  svg.addEventListener('pointerdown',function(e){
+    pts[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(Object.keys(pts).length===1){var t=e.target.closest&&e.target.closest('[data-t]');downT=t?t.getAttribute('data-t'):null;moved=false;start={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y};}
+    else{pinch={d:dist(),z:cam.z};moved=true;}
+    try{svg.setPointerCapture(e.pointerId);}catch(err){}
+  });
+  svg.addEventListener('pointermove',function(e){
+    if(!pts[e.pointerId])return;
+    pts[e.pointerId]={x:e.clientX,y:e.clientY};
+    var n=Object.keys(pts).length;
+    if(n===1&&start){
+      var dx=e.clientX-start.x,dy=e.clientY-start.y;
+      if(!moved&&Math.hypot(dx,dy)>7){moved=true;svg.classList.add('drag');}
+      if(moved){cam.x=start.cx-dx/cam.z;cam.y=start.cy-dy/cam.z;applyCam();}
+    }else if(n===2&&pinch){cam.z=pinch.z*dist()/pinch.d;applyCam();}
+  });
+  function up(e){
+    if(!pts[e.pointerId])return;
+    delete pts[e.pointerId];
+    var n=Object.keys(pts).length;
+    if(n===0){
+      svg.classList.remove('drag');
+      if(!moved&&e.type==='pointerup'){
+        if(downT) tapTile(downT);
+        else if(sel){sel=null;refresh();}
+      }
+      start=null;pinch=null;
+    }else if(n===1){var k=Object.keys(pts)[0];start={x:pts[k].x,y:pts[k].y,cx:cam.x,cy:cam.y};pinch=null;}
+  }
+  svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+  svg.addEventListener('wheel',function(e){e.preventDefault();cam.z*=Math.exp(-e.deltaY*.0015);applyCam();},{passive:false});
+  svg.addEventListener('keydown',function(e){
+    var step=60/cam.z;
+    if(e.key==='ArrowLeft')cam.x-=step;else if(e.key==='ArrowRight')cam.x+=step;else if(e.key==='ArrowUp')cam.y-=step;else if(e.key==='ArrowDown')cam.y+=step;
+    else if(e.key==='+'||e.key==='=')cam.z*=1.2;else if(e.key==='-')cam.z/=1.2;else return;
+    e.preventDefault();applyCam();
+  });
+  window.addEventListener('resize',fitView);
+})();
+$('#zin').addEventListener('click',function(){cam.z*=1.25;applyCam();});
+$('#zout').addEventListener('click',function(){cam.z/=1.25;applyCam();});
+$('#zhome').addEventListener('click',centerCam);
+$('#cancel').addEventListener('click',function(){mode=null;refresh();});
+$('#gtabs').addEventListener('click',function(e){var b=e.target.closest('[data-grp]');if(b){grp=b.getAttribute('data-grp');renderShop();}});
+$('#shop').addEventListener('click',function(e){
+  var b=e.target.closest('[data-build]');if(!b)return;
+  var t=b.getAttribute('data-build');
+  mode=mode===t?null:t;sel=null;refresh();
+  if(mode&&window.innerWidth<860) $('.stage').scrollIntoView({behavior:'smooth',block:'start'});
 });
-$('#island').addEventListener('keydown',function(e){
-  if(e.key!=='Enter'&&e.key!==' ') return;
-  var p=e.target.closest&&e.target.closest('[data-plot]');
-  if(p){e.preventDefault();openBuilding(p.getAttribute('data-plot'));}
+$('#zonebox').addEventListener('click',function(e){var b=e.target.closest('[data-zone]');if(b)openZone(b.getAttribute('data-zone'));});
+$('#quests').addEventListener('click',function(e){var b=e.target.closest('[data-claim]');if(b)claimQuest(+b.getAttribute('data-claim'));});
+$('#selbox').addEventListener('click',function(e){
+  if(e.target.closest('[data-unsel]')){sel=null;refresh();return;}
+  var b=e.target.closest('[data-do]');if(b)doSel(b.getAttribute('data-do'));
 });
-$('#blist').addEventListener('click',function(e){
-  var b=e.target.closest('[data-act]');
-  if(!b) return;
-  if(b.getAttribute('data-act')==='unlock') unlockRegion(b.getAttribute('data-id'));
-  else openBuilding(b.getAttribute('data-id'));
-});
-$('#tabs').addEventListener('click',function(e){
-  var t=e.target.closest('[data-tab]');
-  if(!t) return;
-  state.view=t.getAttribute('data-tab');selDecor=null;save();refresh();
-});
-$('#decs').addEventListener('click',function(e){
-  var b=e.target.closest('[data-dec]');
-  if(!b) return;
-  var k=b.getAttribute('data-dec');
-  selDecor=selDecor===k?null:k;
-  refresh();
-});
-$('#undo').addEventListener('click',undoDecor);
 $('#mute').addEventListener('click',function(){state.mute=!state.mute;save();refresh();});
 $('#reset').addEventListener('click',function(){
   var b=$('#reset');
-  if(!resetArm){resetArm=true;b.textContent='Emin misin? Tekrar dokun';setTimeout(function(){resetArm=false;b.textContent='Adayı sıfırla';},3500);return;}
-  resetArm=false;b.textContent='Adayı sıfırla';state=defaults();selDecor=null;save();refresh();toast('Ada sıfırlandı.');
+  if(!resetArm){resetArm=true;b.textContent='Emin misin? Tekrar dokun';setTimeout(function(){resetArm=false;b.textContent='Adayı baştan başlat';},3500);return;}
+  resetArm=false;b.textContent='Adayı baştan başlat';state=newGame();mode=null;sel=null;save();renderTiles();refresh();centerCam();toast('Ada baştan başladı.');
 });
 $('#modal').addEventListener('click',function(e){
   if(e.target.closest('[data-close]')||e.target.id==='modal'){closeModal();return;}
@@ -1121,7 +1445,7 @@ $('#modal').addEventListener('click',function(e){
   var a=e.target.closest('[data-ana]');
   if(a){var m=a.getAttribute('data-ana');if(m==='back')anaBack();else if(m==='mix')anaMix();else anaSkip();return;}
   if(e.target.closest('[data-next]')){nextQ();return;}
-  if(e.target.closest('[data-again]')){startRound(round.b);return;}
+  if(e.target.closest('[data-again]')){startRound(round.b,round.lv);return;}
 });
 $('#who').addEventListener('click',openLogin);
 $('#login').addEventListener('click',function(e){
@@ -1134,7 +1458,7 @@ $('#login').addEventListener('click',function(e){
 $('#login').addEventListener('submit',function(e){e.preventDefault();createProfile($('#pname').value,newAv);});
 document.addEventListener('keydown',function(e){
   if(!$('#login').hidden){if(e.key==='Escape')closeLogin();return;}
-  if($('#modal').hidden) return;
+  if($('#modal').hidden){if(e.key==='Escape'&&(mode||sel)){mode=null;sel=null;refresh();}return;}
   if(e.key==='Escape'){closeModal();return;}
   if(!round||round.locked) return;
   var q=round.qs[round.i];
@@ -1148,16 +1472,18 @@ document.addEventListener('keydown',function(e){
 });
 
 /* ---------- açılış ---------- */
-function start(data){
+setInterval(function(){if(state&&prof&&tick()){save();renderObjects();if(sel)renderSel();}},1000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&state&&prof){tick();refresh();}});
+function start(){
   profiles=loadProfiles();
-  buildWaves();$('#sky').innerHTML=skySVG();
   var cur=profiles.list.filter(function(p){return p.id===profiles.current;})[0];
-  if(cur){selectProfile(cur.id,true);var hs=sane(data);if(hs){state=hs;refresh();}}
-  else{prof=null;state=defaults();refresh();openLogin();}
+  fitView();renderBoats();
+  if(cur){selectProfile(cur.id,true);}
+  else{prof=null;state=newGame();renderTiles();refresh();openLogin();}
+  centerCam();
+  requestAnimationFrame(stepWalkers);
 }
-if(window.claude&&window.claude.hot&&window.claude.hot.snapshot) window.claude.hot.snapshot(function(){return state;});
-if(window.claude&&window.claude.hot&&window.claude.hot.ready) window.claude.hot.ready(start);
-else start(window.claude&&window.claude.hot&&window.claude.hot.data);
+start();
 })();
 </script>
 </body>
