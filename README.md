@@ -9,6 +9,7 @@
 - **Bilgi binaları ve bulmacalar:** 16 bilgi binası (anagram, bilgi soruları, sayı dizileri, işlem, para ve saat problemleri, doğru/yanlış, hafıza kartları, eş anlamlı eşleştirme). Bulmacalar kaynak ve bilgi yıldızı kazandırır.
 - **Yükseltme:** Binalar 3 seviyeye çıkar. Seviye arttıkça nüfus, üretim ve bulmaca ödülü artar.
 - **Bölgeler:** Köy → Kasaba → İlçe. Nüfus ve bilgi yıldızı hedefine ulaşınca yeni topraklar açılır.
+- **Sürpriz mini oyunlar:** Haritada ara ara uçan balonlar ya da meyveli bir ağaç belirir. Dokununca 40 saniyelik bir oyun açılır: Balon Patlatma (kurala uyan balonları patlat) ve Meyve Sepeti (kurala uyanları sepetle yakala). Kurallar dersle ilgilidir: çift sayılar, 5'in katları, gezegenler, başkentler, memeliler, sesli harfler, eş anlamlılar.
 - **Görevler:** Oyuncuya yol gösteren 17 adımlık görev zinciri.
 - **Oyuncu profilleri:** Ad ve avatar ile giriş. Her oyuncunun adası ayrı saklanır, eski kayıtlar yeni haritaya taşınır.
 
