@@ -257,6 +257,29 @@ footer button{background:none;border:0;color:#9fd2dc;text-decoration:underline;p
 .selb .cost{display:flex;gap:4px;flex-wrap:wrap}
 .side h2{margin:0 0 8px}
 #map .ob.nat.lk{opacity:.7}
+.mintro{text-align:center}
+.mbig svg{width:84px;height:100px}
+.mhud{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.mrule{flex:1 1 100%;font-family:var(--display);font-size:20px;font-weight:800}
+.mstat{background:#fff;border:2px solid var(--line);border-radius:999px;padding:3px 12px;font-weight:700}
+.mstat b{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.arena{position:relative;height:min(52vh,420px);border-radius:18px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.arena.balon{background:linear-gradient(180deg,#8fd7ec,#d8f3fa)}
+.arena.meyve{background:linear-gradient(180deg,#bfe8f3 0%,#e6f7d8 70%,#7cc865 70%,#5fae4f 100%)}
+.bln,.frt{position:absolute;left:0;top:0;width:86px;display:flex;flex-direction:column;align-items:center;will-change:transform}
+.bln{cursor:pointer}
+.bln svg{width:78px;height:108px;display:block}
+.bln span{position:absolute;top:22px;left:4px;right:4px;text-align:center;font-family:var(--display);font-weight:800;font-size:16px;color:#fff;text-shadow:0 1px 0 #10303c,0 0 3px #10303c;line-height:1.05;pointer-events:none}
+.frt svg{width:56px;height:56px}
+.frt span{background:#fff;border:2px solid #10303c;border-radius:10px;padding:1px 6px;font-weight:800;font-size:14px;margin-top:-6px;white-space:nowrap}
+.popd{animation:popd .28s ease-out forwards}
+@keyframes popd{to{opacity:0;scale:1.5}}
+.wrong{animation:wrong .3s ease-out forwards}
+@keyframes wrong{50%{filter:grayscale(1) brightness(.7)}to{opacity:0}}
+.basket{position:absolute;left:0;bottom:14px;width:110px;height:56px;will-change:transform}
+.basket svg{width:100%;height:100%}
+.basket.shake svg{animation:shake .4s}
+#map .evt{cursor:pointer}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -758,7 +781,7 @@ function sane3(s){
   d.obj={};Object.keys(s.obj).forEach(function(k){var o=s.obj[k],p=unkey(k);if(o&&CAT[o.t]&&tile(p[0],p[1])&&tile(p[0],p[1]).t!=='water')d.obj[k]={t:o.t,lv:Math.min(3,Math.max(1,+o.lv||1)),st:+o.st||0};});
   d.nat={};Object.keys(s.nat||{}).forEach(function(k){if(NAT_DRAW[s.nat[k]]&&!d.obj[k])d.nat[k]=s.nat[k];});
   ['played','perfect','cleared'].forEach(function(k){d[k]=+s[k]||0;});
-  d.qdone=Array.isArray(s.qdone)?s.qdone.map(Boolean):[];d.mute=!!s.mute;d.last=+s.last||Date.now();
+  d.qdone=Array.isArray(s.qdone)?s.qdone.map(Boolean):[];d.minis=+s.minis||0;d.best=s.best&&typeof s.best==='object'?{balon:+s.best.balon||0,meyve:+s.best.meyve||0}:{};d.mute=!!s.mute;d.last=+s.last||Date.now();
   return d;
 }
 // eski (v2) kayıttan taşıma: kaynaklar, bölgeler ve kurulmuş bilgi binaları korunur
@@ -925,6 +948,7 @@ function renderObjects(){
       bubble(o)+'</g>';
     items.push({d:p[0]+p[1]+(flat?-.5:0),s:body});
   });
+  if(ev){var ep=unkey(ev.k),es=iso(ep[0],ep[1]);items.push({d:999,s:'<g class="ob evt" data-t="'+ev.k+'" transform="translate('+es.x+' '+(es.y+6)+')">'+eventSVG(ev.kind)+'</g>'});}
   items.sort(function(a,b){return a.d-b.d;});
   $('#objs').innerHTML=items.map(function(x){return x.s;}).join('');
   justPlaced=null;
@@ -934,6 +958,7 @@ function canPlace(t,i,j){
   if(!tl||tl.t==='water') return 'Buraya inşa edilmez.';
   if(!zoneOpen(tl.z)) return 'Bu bölge henüz kilitli.';
   if(state.obj[k]) return 'Burası dolu.';
+  if(ev&&ev.k===k) return 'Burada bir sürpriz var, önce ona dokun.';
   if(state.nat[k]) return 'Önce bu '+(state.nat[k]==='rock'?'kayaya':'ağaca')+' dokunup topla.';
   if(tl.t==='sand'&&!c.sand) return 'Kumsala sadece yol ve süs konur.';
   return '';
@@ -1063,6 +1088,7 @@ function renderShop(){
   $('#zonebox').innerHTML=zl?'<div class="zrow"><div><strong>'+zl.name+' bölgesini aç</strong><span class="sub">'+zoneNeedText(zl)+'</span><div class="cost">'+chips(zl.cost,true)+'</div></div><button type="button" class="btn" data-zone="'+zl.id+'"'+(canOpenZone(zl)?'':' disabled')+'>Aç</button></div>':'<p class="note">Bütün bölgeler açık. Adanın tamamı senin!</p>';
 }
 function hint(){
+  if(ev&&!mode) return 'Haritada sürpriz bir oyun var! '+(ev.kind==='balon'?'Uçan balonları':'Meyveli ağacı')+' bul ve dokun.';
   if(mode) return CAT[mode].name+' yerleştiriyorsun. Açık renkli karelerden birine dokun. Sarı kareler yola bitişik değil.';
   var m=stats();
   if(state.played===0) return 'Kütüphaneye dokun ve ilk bulmacanı çöz. Ağaçlara ve kayalara dokunarak da kaynak toplayabilirsin.';
@@ -1081,6 +1107,7 @@ function refresh(bump){
 /* --- eylemler --- */
 function tapTile(k){
   var p=unkey(k),i=p[0],j=p[1];
+  if(ev&&ev.k===k){var kd=ev.kind;ev=null;evClock=0;evNext=rnd(70,120);mode=null;renderObjects();openMini(kd);return;}
   if(mode){
     var why=canPlace(mode,i,j);
     if(why){toast(why);bad();return;}
@@ -1120,6 +1147,148 @@ function centerCam(){cam.x=0;cam.y=Math.round(C)*TH;cam.z=view.w<600?.85:1.15;ap
 function renderBoats(){
   var spots=[[-560,300,1],[520,520,-1],[-200,690,1]];
   $('#boats').innerHTML=spots.map(function(b,i){return '<g transform="translate('+b[0]+' '+b[1]+') scale('+b[2]+' 1)"><g class="bob" style="animation-delay:-'+i+'s">'+DECOR.kayik.draw+'</g></g>';}).join('');
+}
+
+/* ================= SÜRPRİZ MİNİ OYUNLAR ================= */
+function either(yes,no){var ok=Math.random()<.45;var l=ok?yes:no;return {t:l[rnd(0,l.length-1)],ok:ok};}
+function numRule(test){return function(){var n,ok=Math.random()<.45,g=0;do{n=rnd(1,60);g++;}while(test(n)!==ok&&g<50);return {t:String(n),ok:test(n)};};}
+var MRULES=[
+  {p:'Çift sayıları',gen:numRule(function(n){return n%2===0;})},
+  {p:'5\'in katlarını',gen:numRule(function(n){return n%5===0;})},
+  {p:'3\'ün katlarını',gen:numRule(function(n){return n%3===0;})},
+  {p:'Sonucu 10 olan işlemleri',gen:function(){var ok=Math.random()<.45,a=rnd(1,9),b=ok?10-a:rnd(1,9);if(!ok&&a+b===10)b=b===9?8:b+1;return {t:a+' + '+b,ok:a+b===10};}},
+  {p:'Gezegenleri',gen:function(){return either(['Merkür','Venüs','Dünya','Mars','Jüpiter','Satürn','Uranüs','Neptün'],['Ay','Güneş','Samanyolu','Kuyruklu yıldız','Bulut','Göktaşı']);}},
+  {p:'Başkentleri',gen:function(){return either(['Ankara','Paris','Roma','Tokyo','Berlin','Madrid','Atina','Londra','Kahire','Ottawa'],['İstanbul','İzmir','Milano','Barselona','Münih','Osaka','Sidney','Toronto','Antalya','Bursa']);}},
+  {p:'Memelileri',gen:function(){return either(['Balina','Yarasa','Kedi','Köpek','İnek','Yunus','Aslan','Fil','Zürafa','Tavşan'],['Kartal','Kurbağa','Yılan','Penguen','Köpekbalığı','Kertenkele','Arı','Kelebek','Serçe','Timsah']);}},
+  {p:'Meyveleri',gen:function(){return either(['Elma','Armut','Muz','Kiraz','Çilek','Üzüm','Karpuz','Portakal','Şeftali','Erik'],['Havuç','Patates','Soğan','Ispanak','Marul','Pırasa','Lahana','Brokoli','Turp','Kabak']);}},
+  {p:'Sesli harfleri',gen:function(){return either(['A','E','I','İ','O','Ö','U','Ü'],['B','C','D','K','M','R','S','T','Y','Z']);}},
+  {p:'Eş anlamlı çiftleri',gen:function(){var ok=Math.random()<.45,p=ESANLAM[rnd(0,ESANLAM.length-1)],q=ok?p[1]:ESANLAM[(ESANLAM.indexOf(p)+rnd(1,ESANLAM.length-1))%ESANLAM.length][1];return {t:p[0]+' = '+q,ok:q===p[1]};}}
+];
+var MINIS={
+  balon:{name:'Balon Patlatma',verb:'patlat',how:'Kurala uyan balonlara dokunup patlat. Doğruya +1, yanlışa −1 puan.',time:40},
+  meyve:{name:'Meyve Sepeti',verb:'yakala',how:'Sepeti parmağınla ya da ok tuşlarıyla kaydır. Kurala uyanları yakala, uymayanlardan kaç.',time:40}
+};
+var mini=null,ev=null,evClock=0,evNext=15;
+var BCOL=['#ff6a4d','#3b6ea5','#f2b134','#7b5ea7','#2e9e5b','#ff8fb3','#1a86a3'];
+var FRUIT=['#e4572e','#f2b134','#6cc24a','#ff8fb3','#7b5ea7'];
+function miniHead(m){return '<div class="dh"><div><div class="dk">Sürpriz oyun</div><h2 id="dlgTitle">'+MINIS[m.kind].name+'</h2></div><button type="button" class="x" data-close aria-label="Kapat">×</button></div>';}
+function openMini(kind,rule){
+  stopMini();round=null;
+  var r=rule||MRULES[rnd(0,MRULES.length-1)];
+  mini={kind:kind,rule:r,score:0,hits:0,miss:0,left:MINIS[kind].time,items:[],run:false,spawn:0,last:0,bx:.5,keys:{}};
+  $('#dlgBody').innerHTML=miniHead(mini)+'<div class="mintro"><div class="mbig">'+(kind==='balon'?balloonSVG('#ff6a4d',''):fruitSVG('#e4572e'))+'</div>'+
+    '<p class="q">'+r.p+' '+MINIS[kind].verb+'!</p><p class="hint">'+MINIS[kind].how+' Süre: '+MINIS[kind].time+' saniye.</p>'+
+    '<div class="foot"><button type="button" class="btn" data-mstart>Başla</button></div></div>';
+  openModal();
+}
+function balloonSVG(c,t){return '<svg width="60" height="84" viewBox="0 0 60 84" aria-hidden="true"><path d="M30 64 q-4 10 2 20" fill="none" stroke="#10303c" stroke-width="1.5"/><ellipse cx="30" cy="32" rx="26" ry="30" fill="'+c+'" stroke="#10303c" stroke-width="2.5"/><ellipse cx="20" cy="20" rx="6" ry="9" fill="#fff" opacity=".35"/><path d="M26 62 h8 l-4 5z" fill="'+c+'" stroke="#10303c" stroke-width="2"/></svg>';}
+function fruitSVG(c){return '<svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true"><path d="M30 12 q4 -9 12 -8" fill="none" stroke="#5a3a1f" stroke-width="3"/><path d="M33 10 q10 -6 16 2 q-9 5 -16 -2z" fill="#4bb057" stroke="#10303c" stroke-width="1.5"/><circle cx="30" cy="34" r="23" fill="'+c+'" stroke="#10303c" stroke-width="2.5"/><ellipse cx="22" cy="26" rx="5" ry="7" fill="#fff" opacity=".35"/></svg>';}
+function startMini(){
+  if(!mini) return;
+  var basket=mini.kind==='meyve'?'<div class="basket" id="basket"><svg viewBox="0 0 100 50" aria-hidden="true"><path d="M4 12 h92 l-10 36 h-72z" fill="#c8a26b" stroke="#10303c" stroke-width="3" stroke-linejoin="round"/><path d="M10 24 h80 M14 36 h72" stroke="#8a5a33" stroke-width="2.5"/><path d="M30 12 q20 -22 40 0" fill="none" stroke="#8a5a33" stroke-width="4"/></svg></div>':'';
+  $('#dlgBody').innerHTML=miniHead(mini)+'<div class="mhud"><span class="mrule">'+mini.rule.p+' '+MINIS[mini.kind].verb+'</span><span class="mstat">Puan <b id="mscore">0</b></span><span class="mstat">Süre <b id="mtime">'+mini.left+'</b></span></div>'+
+    '<div class="arena '+mini.kind+'" id="arena">'+basket+'</div>';
+  mini.run=true;mini.last=performance.now();mini.spawn=0;
+  var ar=$('#arena');
+  ar.addEventListener('pointerdown',function(e){
+    if(!mini||!mini.run)return;
+    if(mini.kind==='balon'){var b=e.target.closest('.bln');if(b)popBalloon(b);}
+    else moveBasket(e);
+  });
+  ar.addEventListener('pointermove',function(e){if(mini&&mini.kind==='meyve'&&(e.pointerType==='mouse'||e.buttons))moveBasket(e);});
+  requestAnimationFrame(miniLoop);
+}
+function moveBasket(e){var r=$('#arena').getBoundingClientRect();mini.bx=Math.max(.08,Math.min(.92,(e.clientX-r.left)/r.width));}
+function popBalloon(el){
+  var it=mini.items.filter(function(x){return x.el===el;})[0];if(!it||it.done)return;
+  it.done=true;
+  if(it.ok){mini.score++;mini.hits++;beep(700+mini.hits*15,.08);el.classList.add('popd');}
+  else{mini.score=Math.max(0,mini.score-1);mini.miss++;bad();el.classList.add('wrong');}
+  $('#mscore').textContent=mini.score;
+  setTimeout(function(){el.remove();},280);
+}
+function miniLoop(ts){
+  if(!mini||!mini.run)return;
+  var ar=$('#arena');if(!ar){stopMini();return;}
+  var dt=Math.min(.05,(ts-mini.last)/1000);mini.last=ts;
+  var W=ar.clientWidth,H=ar.clientHeight,el=MINIS[mini.kind].time-mini.left;
+  mini.left-=dt;$('#mtime').textContent=Math.max(0,Math.ceil(mini.left));
+  if(mini.left<=0){endMini();return;}
+  mini.spawn-=dt;
+  if(mini.spawn<=0){
+    var g=mini.rule.gen(),d=document.createElement('div');
+    if(mini.kind==='balon'){
+      d.className='bln';d.innerHTML=balloonSVG(BCOL[rnd(0,BCOL.length-1)])+'<span>'+esc(g.t)+'</span>';
+      mini.items.push({el:d,ok:g.ok,x:rnd(4,78)/100*W,y:H+10,vy:55+Math.random()*35+el*1.2,sw:Math.random()*6});
+      mini.spawn=.75-Math.min(.3,el*.006);
+    }else{
+      d.className='frt';d.innerHTML=fruitSVG(FRUIT[rnd(0,FRUIT.length-1)])+'<span>'+esc(g.t)+'</span>';
+      mini.items.push({el:d,ok:g.ok,x:rnd(4,80)/100*W,y:-70,vy:85+Math.random()*40+el*2.2});
+      mini.spawn=1.05-Math.min(.4,el*.009);
+    }
+    ar.appendChild(d);
+  }
+  if(mini.kind==='meyve'){
+    if(mini.keys.ArrowLeft)mini.bx=Math.max(.08,mini.bx-dt*1.1);
+    if(mini.keys.ArrowRight)mini.bx=Math.min(.92,mini.bx+dt*1.1);
+    var bk=$('#basket'),bw=bk.offsetWidth,bxp=mini.bx*W-bw/2;bk.style.transform='translateX('+bxp+'px)';
+  }
+  mini.items=mini.items.filter(function(it){
+    if(it.done)return !!it.el.parentNode;
+    if(mini.kind==='balon'){
+      it.y-=it.vy*dt;var wob=Math.sin((ts/600)+it.sw)*6;
+      it.el.style.transform='translate('+(it.x+wob)+'px,'+it.y+'px)';
+      if(it.y<-110){it.el.remove();return false;}
+    }else{
+      it.y+=it.vy*dt;it.el.style.transform='translate('+it.x+'px,'+it.y+'px)';
+      var fw=it.el.offsetWidth,cx=it.x+fw/2;
+      if(it.y>H-110&&it.y<H-60&&cx>bxp&&cx<bxp+bw){
+        it.done=true;
+        if(it.ok){mini.score++;mini.hits++;beep(700+mini.hits*15,.08);it.el.classList.add('popd');}
+        else{mini.score=Math.max(0,mini.score-1);mini.miss++;bad();it.el.classList.add('wrong');$('#basket').classList.add('shake');setTimeout(function(){var b=$('#basket');if(b)b.classList.remove('shake');},400);}
+        $('#mscore').textContent=mini.score;var e2=it.el;setTimeout(function(){e2.remove();},250);return true;
+      }
+      if(it.y>H+10){it.el.remove();return false;}
+    }
+    return true;
+  });
+  requestAnimationFrame(miniLoop);
+}
+function endMini(){
+  var m=mini;m.run=false;
+  var k=RKEYS[rnd(0,2)],gain=Math.min(15,Math.ceil(m.score/2)),stars=Math.min(5,Math.floor(m.score/5)),bump={};
+  state.res[k]+=gain;state.res.yildiz+=stars;bump[k]=1;if(stars)bump.yildiz=1;
+  state.minis=(state.minis||0)+1;state.best=state.best||{};var best=state.best[m.kind]||0,rec=m.score>best;if(rec)state.best[m.kind]=m.score;
+  save();
+  $('#dlgBody').innerHTML=miniHead(m)+'<div class="sum"><div class="big">'+m.score+' puan</div>'+
+    '<p><strong>'+(rec&&best?'Yeni rekor! Önceki en iyin '+best+' idi.':m.score>=12?'Muhteşem refleksler!':m.score>=6?'Güzel oyun!':'Bir dahaki sefere daha iyisi olur.')+'</strong></p>'+
+    '<p class="note">'+m.hits+' doğru, '+m.miss+' yanlış.</p>'+
+    '<div class="gains"><span class="chip">'+RES[k].svg+'+'+gain+' '+RES[k].name.toLowerCase()+'</span>'+(stars?'<span class="chip">'+RES.yildiz.svg+'+'+stars+' yıldız</span>':'')+'</div></div>'+
+    '<div class="foot"><button type="button" class="btn alt" data-close>Şehre dön</button><button type="button" class="btn" data-magain>Tekrar oyna</button></div>';
+  renderRes(bump);good();
+}
+function stopMini(){if(mini)mini.run=false;mini=null;}
+document.addEventListener('keydown',function(e){if(mini&&mini.run&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){mini.keys[e.key]=true;e.preventDefault();}});
+document.addEventListener('keyup',function(e){if(mini)mini.keys[e.key]=false;});
+
+/* haritada beliren sürpriz */
+function spawnEvent(){
+  var free=[];
+  for(var i=0;i<N;i++)for(var j=0;j<N;j++){var t=TILES[i][j],k=key(i,j);if(t.t==='grass'&&zoneOpen(t.z)&&!state.obj[k]&&!state.nat[k])free.push(k);}
+  if(!free.length)return;
+  ev={k:free[rnd(0,free.length-1)],kind:Math.random()<.5?'balon':'meyve'};
+  toast(ev.kind==='balon'?'Gökyüzünde balonlar belirdi! Haritada bul ve dokun.':'Bir meyve ağacı meyve verdi! Haritada bul ve dokun.');
+  beep(880,.1);setTimeout(function(){beep(1175,.12);},120);
+  renderObjects();$('#status').textContent=hint();
+}
+function eventSVG(kind){
+  var mark='<polygon points="0,-12 28,2 0,16 -28,2" fill="#ffd166" opacity=".55" class="pulse"/>';
+  var bang='<g transform="translate(0 '+(kind==='balon'?-104:-78)+')"><g class="bob"><circle r="12" fill="#ffd166" stroke="#10303c" stroke-width="2.5"/><text y="6" text-anchor="middle" class="bn" style="font-size:17px">!</text></g></g>';
+  return '<rect x="-32" y="-118" width="64" height="134" fill="transparent"/>'+mark+eventInner(kind)+bang;
+}
+function eventInner(kind){
+  if(kind==='balon') return '<g class="bob"><g transform="translate(-14 -78) scale(.42)">'+balloonSVG('#ff6a4d')+'</g><g transform="translate(-2 -86) scale(.42)">'+balloonSVG('#3b6ea5')+'</g><g transform="translate(8 -74) scale(.42)">'+balloonSVG('#f2b134')+'</g></g><circle r="5" fill="#fff" opacity=".8" class="glow"/>';
+  return '<g>'+NAT_DRAW.tree(1)+'</g><g class="bob"><g transform="translate(-20 -44) scale(.34)">'+fruitSVG('#e4572e')+'</g><g transform="translate(2 -52) scale(.34)">'+fruitSVG('#f2b134')+'</g><g transform="translate(-6 -32) scale(.34)">'+fruitSVG('#ff6a4d')+'</g></g>';
 }
 
 /* ---------- soru üreticiler ---------- */
@@ -1221,7 +1390,7 @@ function makeQs(b){
 
 /* ---------- bulmaca penceresi ---------- */
 function openModal(){var m=$('#modal');m.hidden=false;$('#dlg').scrollTop=0;$('#dlg').focus();}
-function closeModal(){$('#modal').hidden=true;round=null;refresh();}
+function closeModal(){$('#modal').hidden=true;round=null;stopMini();refresh();}
 function head(b){
   return '<div class="dh"><div><div class="dk">'+b.skill+'</div><h2 id="dlgTitle">'+b.name+'</h2></div><button type="button" class="x" data-close aria-label="Kapat">×</button></div>'+
     '<div class="dots" aria-label="Soru '+(round.i+1)+' / '+round.qs.length+'">'+round.qs.map(function(_,i){
@@ -1436,6 +1605,8 @@ $('#reset').addEventListener('click',function(){
 });
 $('#modal').addEventListener('click',function(e){
   if(e.target.closest('[data-close]')||e.target.id==='modal'){closeModal();return;}
+  if(e.target.closest('[data-mstart]')){startMini();return;}
+  if(e.target.closest('[data-magain]')&&mini){openMini(mini.kind);return;}
   if(!round) return;
   var o=e.target.closest('[data-opt]');if(o){answerMC(+o.getAttribute('data-opt'));return;}
   var t=e.target.closest('[data-tile]');if(t){anaAdd(+t.getAttribute('data-tile'));return;}
@@ -1472,7 +1643,11 @@ document.addEventListener('keydown',function(e){
 });
 
 /* ---------- açılış ---------- */
-setInterval(function(){if(state&&prof&&tick()){save();renderObjects();if(sel)renderSel();}},1000);
+setInterval(function(){
+  if(!state||!prof)return;
+  if(tick()){save();renderObjects();if(sel)renderSel();}
+  if(!document.hidden&&$('#modal').hidden&&$('#login').hidden&&!ev){evClock++;if(evClock>=evNext)spawnEvent();}
+},1000);
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&state&&prof){tick();refresh();}});
 function start(){
   profiles=loadProfiles();
