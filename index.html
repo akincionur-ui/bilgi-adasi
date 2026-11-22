@@ -273,7 +273,15 @@ var WORDS=[
  {w:'ORMAN',h:'Ağaçların büyük evi.'},{w:'BULUT',h:'Gökte yağmur taşır.'},
  {w:'MERCAN',h:'Denizin altında renkli resifler kurar.'},{w:'PUSULA',h:'İbresi hep kuzeyi gösterir.'},
  {w:'KAPTAN',h:'Geminin yöneticisi.'},{w:'DEFTER',h:'İçine not alırsın.'},
- {w:'HARİTA',h:'Yolunu bulmana yarar.'},{w:'FENER',h:'Karanlıkta yol gösterir.'}
+ {w:'HARİTA',h:'Yolunu bulmana yarar.'},{w:'FENER',h:'Karanlıkta yol gösterir.'},
+ {w:'GEMİ',h:'Denizde yolcu ve yük taşır.'},{w:'OKYANUS',h:'Denizlerden de büyük su kütlesi.'},
+ {w:'ROKET',h:'Astronotları uzaya fırlatır.'},{w:'GEZEGEN',h:'Bir yıldızın etrafında döner.'},
+ {w:'KARINCA',h:'Küçük ama çok çalışkan bir böcek.'},{w:'ŞEMSİYE',h:'Yağmurda seni ıslanmaktan korur.'},
+ {w:'KALEM',h:'Onunla yazı yazarsın.'},{w:'OKUL',h:'Arkadaşlarınla ders gördüğün yer.'},
+ {w:'TAVŞAN',h:'Uzun kulaklı, havuç sever.'},{w:'YAĞMUR',h:'Bulutlardan damla damla düşer.'},
+ {w:'BALIK',h:'Suda yaşar, solungaçla nefes alır.'},{w:'KUMSAL',h:'Denizin kıyısındaki kumlu yer.'},
+ {w:'ASTRONOT',h:'Uzayda görev yapan kişi.'},{w:'SÖZLÜK',h:'Kelimelerin anlamlarını bulursun.'},
+ {w:'BAHÇE',h:'Çiçek ve sebze yetiştirilen yer.'},{w:'MEKTUP',h:'Zarfa koyup postayla gönderirsin.'}
 ];
 
 var BANK={
@@ -287,7 +295,17 @@ var BANK={
   {q:'Samanyolu nedir?',o:['Bir galaksi','Bir gezegen','Bir kuyruklu yıldız','Bir uydu'],e:'Samanyolu, Güneş Sistemi\'nin de içinde bulunduğu galaksidir.'},
   {q:'İnsanoğlu Ay\'a ilk kez hangi yıl ayak bastı?',o:['1969','1957','1975','1983'],e:'Apollo 11 görevi Temmuz 1969\'da Ay\'a indi.'},
   {q:'Güneş Sistemi\'nde kaç gezegen vardır?',o:['8','7','9','10'],e:'Merkür\'den Neptün\'e kadar 8 gezegen sayılır.'},
-  {q:'Aşağıdakilerden hangisi bir yıldızdır?',o:['Güneş','Ay','Mars','Venüs'],e:'Güneş kendi ışığını üreten bir yıldızdır, gezegenler ise sadece yansıtır.'}
+  {q:'Aşağıdakilerden hangisi bir yıldızdır?',o:['Güneş','Ay','Mars','Venüs'],e:'Güneş kendi ışığını üreten bir yıldızdır, gezegenler ise sadece yansıtır.'},
+  {q:'Güneş Sistemi\'nin en sıcak gezegeni hangisidir?',o:['Venüs','Merkür','Mars','Jüpiter'],e:'Venüs\'ün kalın atmosferi ısıyı hapseder, bu yüzden Merkür\'den bile sıcaktır.'},
+  {q:'Dünya kendi etrafındaki bir turunu yaklaşık ne kadarda tamamlar?',o:['24 saatte','1 haftada','1 ayda','1 yılda'],e:'Dünya\'nın kendi etrafında dönmesi gece ile gündüzü oluşturur.'},
+  {q:'Dünya Güneş\'in etrafındaki bir turunu yaklaşık ne kadarda tamamlar?',o:['1 yılda','1 günde','1 ayda','10 yılda'],e:'Bu tur yaklaşık 365 gün sürer.'},
+  {q:'Ay\'ın yüzeyindeki büyük çukurlara ne ad verilir?',o:['Krater','Vadi','Mağara','Göl'],e:'Kraterler, Ay\'a çarpan göktaşlarının izleridir.'},
+  {q:'Uzaya çıkan ilk insan kimdir?',o:['Yuri Gagarin','Neil Armstrong','Buzz Aldrin','Valentina Tereşkova'],e:'Yuri Gagarin 1961\'de Dünya\'nın çevresinde bir tur attı.'},
+  {q:'Güneş\'e en uzak gezegen hangisidir?',o:['Neptün','Uranüs','Satürn','Mars'],e:'Neptün, Güneş Sistemi\'nin en dıştaki gezegenidir.'},
+  {q:'Kuyruklu yıldızlar daha çok nelerden oluşur?',o:['Buz ve tozdan','Sıcak lavdan','Sadece demirden','Sudan oluşan bulutlardan'],e:'Güneş\'e yaklaştıklarında buzları eriyip parlak bir kuyruk oluşturur.'},
+  {q:'Teleskop ne işe yarar?',o:['Uzaktaki cisimleri yakın gösterir','Havanın sıcaklığını ölçer','Yönü gösterir','Zamanı ölçer'],e:'Gökbilimciler yıldızları ve gezegenleri teleskopla inceler.'},
+  {q:'Mevsimlerin oluşmasının asıl nedeni nedir?',o:['Dünya\'nın ekseninin eğik olması','Dünya\'nın Güneş\'e uzaklığının değişmesi','Ay\'ın hareketleri','Bulutların hareketi'],e:'Eğik eksen yüzünden Güneş ışınları yıl boyunca farklı açılarla gelir.'},
+  {q:'Gece gökyüzünde çıplak gözle görülen en parlak gezegen hangisidir?',o:['Venüs','Mars','Satürn','Neptün'],e:'Venüs\'e bu yüzden Çoban Yıldızı da denir.'}
  ],
  doga:[
   {q:'Bitkiler fotosentez için havadan hangi gazı alır?',o:['Karbondioksit','Oksijen','Azot','Helyum'],e:'Bitkiler karbondioksit alır, oksijen verir.'},
@@ -299,7 +317,17 @@ var BANK={
   {q:'En hızlı kara hayvanı hangisidir?',o:['Çita','Aslan','At','Tavşan'],e:'Çita kısa mesafede saatte 100 km\'nin üzerine çıkabilir.'},
   {q:'Bitkiler suyu vücutlarına hangi kısımlarıyla alır?',o:['Kök','Yaprak','Çiçek','Meyve'],e:'Kökler suyu ve mineralleri topraktan emer.'},
   {q:'Uçabilen tek memeli grubu hangisidir?',o:['Yarasalar','Kuşlar','Arılar','Kelebekler'],e:'Yarasalar memelidir, kuşlar ise ayrı bir gruptur.'},
-  {q:'Bir ağacın yaşı gövdesindeki neye bakılarak tahmin edilir?',o:['Halkalarına','Yaprak sayısına','Boyuna','Meyve rengine'],e:'Her yıl gövdede yeni bir halka oluşur.'}
+  {q:'Bir ağacın yaşı gövdesindeki neye bakılarak tahmin edilir?',o:['Halkalarına','Yaprak sayısına','Boyuna','Meyve rengine'],e:'Her yıl gövdede yeni bir halka oluşur.'},
+  {q:'Saf su kaç derecede donar?',o:['0 °C','10 °C','-10 °C','100 °C'],e:'Su 0 °C\'de donar, deniz seviyesinde 100 °C\'de kaynar.'},
+  {q:'Örümceklerin kaç bacağı vardır?',o:['8','6','4','10'],e:'Böceklerin 6, örümceklerin 8 bacağı vardır.'},
+  {q:'Kurbağa hangi canlı grubundandır?',o:['İki yaşamlı','Sürüngen','Memeli','Balık'],e:'Kurbağalar hayatlarının bir kısmını suda, bir kısmını karada geçirir.'},
+  {q:'Vücudumuzdaki en büyük organ hangisidir?',o:['Deri','Kalp','Akciğer','Mide'],e:'Deri, vücudumuzu dışarıdan koruyan en büyük organdır.'},
+  {q:'Bitkilere yeşil rengini veren madde hangisidir?',o:['Klorofil','Polen','Nişasta','Tuz'],e:'Klorofil, bitkilerin güneş ışığını yakalamasına da yardım eder.'},
+  {q:'Arıların çiçekten çiçeğe taşıdığı toza ne ad verilir?',o:['Polen','Kum','Kül','Tebeşir'],e:'Polen taşınması bitkilerin meyve ve tohum vermesini sağlar.'},
+  {q:'Aşağıdakilerden hangisi uçamayan bir kuştur?',o:['Penguen','Kartal','Serçe','Güvercin'],e:'Penguenler kanatlarını suda yüzmek için kullanır.'},
+  {q:'Yetişkin bir insanın iskeletinde yaklaşık kaç kemik vardır?',o:['206','50','100','500'],e:'Bebeklerde daha fazla kemik vardır, büyüdükçe bazıları birleşir.'},
+  {q:'Yağmur, kar ve dolunun ortak adı nedir?',o:['Yağış','Rüzgâr','Sis','Deprem'],e:'Bulutlardaki su damlaları ağırlaşınca yeryüzüne yağış olarak düşer.'},
+  {q:'Aşağıdakilerden hangisi otçul bir hayvandır?',o:['Zürafa','Aslan','Kurt','Kartal'],e:'Zürafalar uzun boyunlarıyla ağaçların yapraklarını yer.'}
  ],
  cografya:[
   {q:'Türkiye\'nin başkenti neresidir?',o:['Ankara','İstanbul','İzmir','Bursa'],e:'Ankara 1923\'te başkent oldu.'},
@@ -312,6 +340,15 @@ var BANK={
   {q:'Kanada\'nın başkenti neresidir?',o:['Ottawa','Toronto','Vancouver','Montreal'],e:'En büyük şehir Toronto olsa da başkent Ottawa\'dır.'},
   {q:'Türkiye\'nin en büyük gölü hangisidir?',o:['Van Gölü','Tuz Gölü','Beyşehir Gölü','Eğirdir Gölü'],e:'Van Gölü aynı zamanda sodalı bir göldür.'},
   {q:'İstanbul hangi iki kıtanın üzerinde yer alır?',o:['Asya ve Avrupa','Avrupa ve Afrika','Asya ve Afrika','Avrupa ve Amerika'],e:'Şehir İstanbul Boğazı\'nın iki yakasına yayılır.'},
+  {q:'Dünyanın en yüksek dağı hangisidir?',o:['Everest','Ağrı Dağı','Kilimanjaro','Mont Blanc'],e:'Everest yaklaşık 8849 metredir ve Himalayalar\'da yer alır.'},
+  {q:'Dünyanın en büyük sıcak çölü hangisidir?',o:['Sahra','Gobi','Kalahari','Atacama'],e:'Sahra Çölü Kuzey Afrika\'nın büyük kısmını kaplar.'},
+  {q:'Hangisi Türkiye\'nin üç tarafını çevreleyen denizlerden biri değildir?',o:['Kızıldeniz','Karadeniz','Ege Denizi','Akdeniz'],e:'Türkiye kuzeyde Karadeniz, batıda Ege, güneyde Akdeniz ile çevrilidir.'},
+  {q:'Tamamı Türkiye sınırları içinde kalan en uzun nehir hangisidir?',o:['Kızılırmak','Sakarya','Yeşilırmak','Fırat'],e:'Kızılırmak yaklaşık 1350 km uzunluğundadır.'},
+  {q:'İtalya\'nın başkenti neresidir?',o:['Roma','Milano','Venedik','Napoli'],e:'Roma binlerce yıllık tarihiyle Ebedi Şehir olarak da anılır.'},
+  {q:'Almanya\'nın başkenti neresidir?',o:['Berlin','Münih','Hamburg','Viyana'],e:'Viyana ise Avusturya\'nın başkentidir.'},
+  {q:'Yüzölçümü en büyük ülke hangisidir?',o:['Rusya','Kanada','Çin','ABD'],e:'Rusya hem Avrupa\'ya hem Asya\'ya yayılır.'},
+  {q:'Ekvator nedir?',o:['Dünya\'yı kuzey ve güney yarıya ayıran hayali çizgi','Dünyanın en uzun nehri','Bir okyanusun adı','Kutuplardaki buz tabakası'],e:'Ekvator çevresindeki bölgeler yıl boyu sıcaktır.'},
+  {q:'Peri bacalarıyla ünlü bölge hangisidir?',o:['Kapadokya','Pamukkale','Uludağ','Bodrum'],e:'Peri bacaları, rüzgâr ve yağmurun yumuşak kayaları aşındırmasıyla oluştu.'},
   {q:'Avustralya\'nın başkenti neresidir?',o:['Canberra','Sidney','Melbourne','Perth'],e:'Sidney en büyük şehir, başkent ise Canberra\'dır.'}
  ]
 };
@@ -506,9 +543,22 @@ function anaQ(w){
   while(mix.join('')===w.w&&n++<20) mix=shuffle(letters);
   return {kind:'ana',word:w.w,hint:w.h,tiles:mix.map(function(c){return {ch:c,used:false};}),ans:[],locked:false};
 }
+/* Havuz bitene kadar aynı soruyu tekrar sormaz; son görülenler cihazda saklanır. */
+var SEEN_KEY='bilgiAdasi.seen';
+var seen=(function(){try{var v=JSON.parse(localStorage.getItem(SEEN_KEY));return v&&typeof v==='object'?v:{};}catch(e){return {};}})();
+function pick(key,list,n){
+  var r=Array.isArray(seen[key])?seen[key]:[];
+  var idx=list.map(function(_,i){return i;});
+  var fresh=shuffle(idx.filter(function(i){return r.indexOf(i)<0;}));
+  var stale=shuffle(idx.filter(function(i){return r.indexOf(i)>=0;}));
+  var chosen=fresh.concat(stale).slice(0,n);
+  seen[key]=r.filter(function(i){return chosen.indexOf(i)<0&&i<list.length;}).concat(chosen).slice(-Math.max(0,list.length-n));
+  try{localStorage.setItem(SEEN_KEY,JSON.stringify(seen));}catch(e){}
+  return chosen.map(function(i){return list[i];});
+}
 function makeQs(b){
-  if(b.game==='anagram') return shuffle(WORDS).slice(0,3).map(anaQ);
-  if(b.game==='quiz') return shuffle(BANK[b.cat]).slice(0,3).map(bankQ);
+  if(b.game==='anagram') return pick('kelime',WORDS,3).map(anaQ);
+  if(b.game==='quiz') return pick(b.cat,BANK[b.cat],3).map(bankQ);
   if(b.game==='dizi') return [seqQ(),seqQ(),seqQ()];
   return [mathQ(),mathQ(),mathQ()];
 }
